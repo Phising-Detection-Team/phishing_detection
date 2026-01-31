@@ -1,0 +1,203 @@
+from datetime import datetime
+from . import db
+
+class Email(db.Model):
+    """
+    Model representing a single email in a competition round
+
+    Lifecycle:
+    1. Generator creats email with is_phishing flag
+    2. Detector analyzes and provides verdict + reasoning
+    3. Judge compares detector verdict to actual flag
+    4. Optional: Human can override judge verdict
+    """
+
+    __tablename__ = 'emails'
+
+    # PRIMARY KEY
+    id = db.Column(db.Integer, primary_key=True)
+
+    # FOREIGN KEY
+    round_id = db.Column(
+        db.Integer,
+        db.ForeignKey('round_id', ondelete='CASCADE'),
+        nullable=False,
+        index=True          # Faster look up
+    )
+
+    # GENERATOR OUTPUTS
+    generated_content = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+    # Ground truth: is this actually a phishing email?
+    # Set by generator, used by judge for evaluation
+    is_phishing = db.Column(
+        db.Boolean,
+        nullable=False    
+    )
+
+    # Stored as JSON for flexibility
+    # Example: {
+    #   "subject": "Urgent: Verify your account",
+    #   "sender": "support@fake-bank.com",
+    #   "links": ["http://malicious-site.com"],
+    #   "attachments": ["invoice.exe"]
+    # }
+    generated_email_metadata = db.Column(
+        db.JSON,
+        nullable=False
+    )
+
+    # DETECTOR OUTPUTS
+    detector_verdict = db.Column(
+        db.String(20),
+        nullable=False
+    )
+
+    # Detector's confidence (0.0 to 1.0) -> Higher = more confident
+    detector_confidence = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    # Detector's explanation of its decision
+    # Example: "Contains urgency keywords an suspicious link"
+    detector_reasoning = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # JUDGE OUTPUTS
+
+    # Judge's verdict: " correct" or "incorrect"
+    # Compares detector_verdict with is_phishing
+    judge_verdict =db.Column(
+        db.String(20),
+        nullable=False
+    )
+
+    # Judge's explanation
+    # Example: "Detector correctly identified phishing indicators"
+    judge_reasoning = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # MANUALLY OVERRIDE
+    # Was this overridden by human?
+    manual_override = db.Column(
+        db.Boolean,
+        nullable=True
+    )
+    # Human's override verdict (if manual)
+    override_verdict = db.Column(
+        db.String(20),
+        nullable=True
+    )
+
+    # Reason for override
+    override_reason = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    # Who overrode the verdict
+    overridden_by = db.Column(
+        db.String(100),
+        nullable=True
+    )
+
+    # When was it overridden
+    overridden_at = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    # METADATA
+
+    # When this email record was created
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    # Processing time (seconds)
+    # How long did it take to generate, detect, and judge?
+    processing_time = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    # API cost for this email (USD)
+    # Sum generator + detector + judge
+    cost = db.Column(
+        db.Float,
+        default=0.0
+    )
+
+    # METHODS
+    def __repr__(self):
+        """String representation for debugging"""
+        return f"<Email {self.id} (Round {self.round_id})>"
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON responses"""
+        return {
+            'id': self.id,
+            'round_id': self.round_id,
+            'generated_content': self.generated_content,
+            'is_phishing': self.is_phishing,
+            'generated_email_metadata': self.generated_email_metadata,
+            'detector_verdict': self.detector_verdict,
+            'detector_confidence': self.detector_confidence,
+            'detector_reasoning': self.detector_reasoning,
+            'judge_verdict': self.judge_verdict,
+            'judge_reasoning': self.judge_reasoning,
+            'manual_override': self.manual_override,
+            'override_verdict': self.override_verdict,
+            'override_reason': self.override_reason,
+            'overridden_by': self.overridden_by,
+            'overridden_at': self.overridden_at,
+            'created_at': self.created_at,
+            'processing_time': self.processing_time,
+            'cost': self.cost
+        }
+    
+    def get_final_verdict(self):
+        """
+        Get the final verdict (considering manual overrides)
+
+        Returns:
+            str: "correct" or "incorrect"
+        """
+
+        if self.manual_override:
+            return self.override_verdict
+        
+        return self.judge_verdict
+    
+    def is_false_positive(self):
+        """
+        Check if this is a false positive (Says it phishing but it is legitimate)
+
+        Returns:
+            bool: True if false positive
+        """
+
+        return (
+            not self.is_phishing and 
+            self.detector_verdict == "phishing"
+        )
+    
+    def is_false_negative(self):
+        """
+        Check if this is a false negative
+        """
+        
+        return (
+            self.is_phishing and 
+            self.detector_verdict == "legitimate"
+        )
+
