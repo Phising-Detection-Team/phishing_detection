@@ -30,11 +30,11 @@ This questionnaire will help you define clear objectives, scope, and requirement
   - [ ] Other: _______________
 
 - **What does success look like?** (Be specific)
-  - [x] Answer: The AI model successfully verifies emails in real-time, detecting potential threats with high accuracy and sending immediate, clear flags to the user.
+  - [x] Answer: The AI models successfully verifies emails in real-time with historical sets of training datas (described in The Two-Model Approach with a judgement Model/Human Override sections), detecting potential threats with high accuracy and sending immediate, clear flags to the user.
 
 - **What are your top 3 must-have features?**
-  1. AI-based Phishing Detection Model (NLP & Metadata analysis)
-  2. Real-time IMAP Integration for continuous monitoring
+  1. AI-based Phishing Detection Model (Final Training Dataset after all the rounds for a Frontier/Open-Source model)
+  2. Real-time Content Scripts for continuous monitoring (browser extension stage?!)
   3. Instant Alert and Notification System (Mobile/Web)
 
 - **What are nice-to-have features that could be added later?**
@@ -44,6 +44,10 @@ This questionnaire will help you define clear objectives, scope, and requirement
 How will you measure if the project is successful?
 
 - **Technical metrics:**
+  - **Notes**: 
+        - Precision: “Of all the scam emails items the model predicted as scam, how many were actually scam?”
+        - Recall: “Of all the actual scam emails, how many did the model correctly detect?”
+
   - [x] Detection accuracy (target: > 85% precision, > 80% recall)
   - [x] False positive rate (target: less than 5%)
   - [x] Detection speed (target: within 5 seconds)
@@ -54,7 +58,7 @@ How will you measure if the project is successful?
   - [x] User satisfaction score (Survey based)
   - [x] Number of threats successfully blocked
   - [x] Reduction in successful attacks (simulated or real)
-  - [x] User engagement with alerts (Click-through rate on warnings)
+  - [x] User engagement with alerts (Click-through rate on warnings - Future Enhancements on On-click behavior)
   - [ ] Other: _______________
 
 ---
@@ -85,7 +89,7 @@ How will you measure if the project is successful?
   - [ ] Investors/Advisors: _______________
 
 - **What does each stakeholder group care most about?**
-  - **Technical:** Code quality, architecture scalability, and model accuracy.
+  - **Technical:** Code quality, Testing cases coverage, architecture scalability, and model accuracy.
   - **Business:** (N/A)
   - **Users:** Ease of use, low false positives (don't block real emails), and speed.
 
@@ -99,7 +103,7 @@ How will you measure if the project is successful?
   - [ ] On-premise servers
   - [ ] Hybrid (cloud + on-premise)
   - [ ] User's local machine
-  - [x] Not yet decided -> Chose (Likely Docker container on local server or free-tier Cloud)
+  - [x] Not yet decided -> Let's discuss about this. End goal is for Browser Extension and we are not familiar how to proceed with this.
 
 - **What is your expected scale?**
   - [x] Number of users: 50+
@@ -114,12 +118,12 @@ How will you measure if the project is successful?
   - [ ] Microsoft 365 / Outlook.com
   - [ ] Exchange Server
   - [ ] Yahoo Mail
-  - [x] Custom/Corporate IMAP servers
-  - [ ] Other: _______________
+  - [ ] Custom/Corporate IMAP servers
+  - [x] Other: We plan to use Content Script to support Browser Extension. Out of the above options, which one can we support?
 
 - **Authentication method:**
   - [x] OAuth2 (recommended for Gmail/Microsoft)
-  - [x] IMAP username/password
+  - [ ] IMAP username/password
   - [x] API-based (Gmail API, Microsoft Graph API)
 
 - **What email data will you access?**
@@ -131,27 +135,25 @@ How will you measure if the project is successful?
 - **Real-time monitoring requirements:**
   - [ ] Check frequency: Every 15 minutes
   - [x] Processing latency target: Detect threats within 10 seconds
-  - [x] Historical scan needed? (analyze past emails): Yes
-    - If yes, how far back? 10 previous emails for context
+  - [ ] Historical scan needed? (analyze past emails): No
 
 ### 3.3 Technology Stack
 - **What technologies are you committed to using?**
   - **Programming language:** Python
-  - **ML/AI framework:** PyTorch or TensorFlow (for model training), Scikit-learn
+  - **ML/AI framework:** PyTorch or TensorFlow (for model training), Scikit-learn. Not for now, might be used for model training later.
   - **Backend framework:** FastAPI (for high performance) or Flask
   - **Database:** PostgreSQL (Metadata), Redis (caching/queue)
-  - **Message queue/streaming:** Redis Streams or RabbitMQ
-  - **Frontend:** Streamlit (for easy dashboarding) or React
-  - **Deployment/Orchestration:** Docker, Docker Compose
+  - **Frontend:** React - Next.js or Vite
+  - **Deployment/Orchestration:** Docker, Docker Compose - as mentioned above, let's discuss more on this
 
 - **Are there any technology constraints?** (e.g., must use specific cloud provider, must be open-source, etc.)
-  - [x] Answer: Must use GitHub for version control; preference for free/open-source tools (AWS Free Tier if needed).
+  - [x] Answer: Must use GitHub for version control
 
 ### 3.4 System Architecture Questions
 - **Will this be:**
   - [ ] Real-time streaming system (continuous monitoring)
   - [ ] Batch processing system (periodic scans)
-  - [x] Hybrid (real-time + scheduled deep scans)
+  - [x] Hybrid (real-time + scheduled deep scans) - Let's see how possible it is after first iteration.
 
 - **How will you handle high email volumes?**
   - [ ] Queue-based processing
@@ -161,9 +163,9 @@ How will you measure if the project is successful?
 
 - **Do you need a web interface/dashboard?**
   - [ ] Yes, for end users
-  - [ ] Yes, for administrators only
+  - [x] Yes, for administrators only
   - [ ] No, command-line/API only
-  - [x] Not yet decided -> Chose (Likely yes, for users to view logs)
+  - [ ] Not yet decided -> Chose (Likely yes, for users to view logs)
 
 ---
 
@@ -207,6 +209,7 @@ How will you measure if the project is successful?
   - [x] Suspicious URLs/domains (typosquatting, e.g., "g0ogle.com")
   - [x] Malicious attachment types (.exe, .scr, macro-enabled .doc)
   - [x] SPF/DKIM/DMARC failures
+  - [x] Everything before the final "@" in a URL is treated as userinfo (credentials) and is not used to determine the destination host.
 
 - **Behavioral signals (requires baseline):**
   - [x] User never emails this sender
@@ -238,6 +241,7 @@ How will you measure if the project is successful?
   - [x] How will you prevent misuse? The generator will be containerized with no external network access to send emails.
   - [x] Will generated emails be watermarked? Yes, all generated content will have a specific metadata tag.
   - [x] Who will have access? Only the development team.
+  - [x] Let's discuss more on how we can guardrail this model to ensure moral considerations.
 
 ### 5.2 Model 2: Detection/Classification Model
 - **What type of model are you building?**
@@ -251,19 +255,19 @@ How will you measure if the project is successful?
   - [x] Sender metadata
 
 - **What ML techniques are you considering?**
-  - [x] Deep learning (Transformers - BERT/DistilBERT)
-  - [x] Traditional ML (Random Forest for metadata analysis)
-  - [x] Not yet decided -> Chose (Will experiment to find best accuracy/performance balance)
+  - [ ] Deep learning (Transformers - BERT/DistilBERT)
+  - [ ] Traditional ML (Random Forest for metadata analysis)
+  - [x] Not yet decided -> For now we need synthetic dataset first for final training
 
 ### 5.3 Model Integration
 - **Will both models work together in production?**
-  - [ ] No - Model 1 is only for training/testing
-  - [x] Yes - Model 1 generates edge cases to continuously retrain Model 2 (Adversarial Training)
+  - [x] No - Model 1 is only for training/testing. Model 2 should be production-ready after the training.
+  - [] Yes - Model 1 generates edge cases to continuously retrain Model 2 (Adversarial Training)
 
 - **How often will models be retrained/updated?**
-  - [x] Real-time learning (continuous updates) -> Chose
+  - [ ] Real-time learning (continuous updates) -> Chose
   - [ ] Daily
-  - [x] Weekly -> Chose (Scheduled batch retraining)
+  - [x] Weekly -> Chose (Scheduled batch retraining) - redeployment for detection model if needed
 
 ---
 
@@ -275,14 +279,15 @@ How will you measure if the project is successful?
   - [ ] Metadata only (sender, timestamp, subject, labels)
 
 - **How long will data be retained?**
-  - [x] Stored for training purposes (3 months) -> Chose
+  - [ ] Stored for training purposes (3 months) -> Chose
+  - [x] for now if needed, we can generate more test emails from Model 1. Let's discuss on this if we need real emails from user.
 
 ### 6.2 Privacy & Compliance
 - **What regulations apply to your project?**
   - [ ] GDPR (European Union)
   - [ ] HIPAA (healthcare data)
   - [ ] None / Not applicable (Student Project)
-  - [x] Not sure - need to research -> Chose (Will follow GDPR principles as a best practice)
+  - [x] Not sure - need to research -> Chose (Will follow GDPR principles as a best practice - this is still a student project just FYI)
 
 - **How will you obtain user consent?**
   - [x] Answer: Implementing a clear Terms of Service and Privacy Policy agreement that users must digitally sign/accept upon account creation.
@@ -312,9 +317,9 @@ How will you measure if the project is successful?
 ### 7.1 Alert Delivery
 - **How will users receive threat notifications?**
   - [ ] Email notification
-  - [x] Push notification (mobile app) -> Chose
+  - [ ] Push notification (mobile app) -> Chose
   - [ ] SMS
-  - [x] Web dashboard -> Chose
+  - [ ] Web dashboard -> Chose
   - [x] Browser extension -> Chose
 
 - **Alert urgency levels:**
@@ -335,10 +340,11 @@ How will you measure if the project is successful?
   3. System runs an initial "historical scan" to build a baseline.
 
 - **Does the system need a training/calibration period?**
-  - [x] Yes - 24 hours for initial baseline.
+  - [ ] Yes - 24 hours for initial baseline.
+  - [x] No - only check future emails incoming.
 
 - **How will you minimize false positives during initial use?**
-  - [x] Answer: Set the detection threshold higher (more conservative) for the first week so only obvious threats are flagged.
+  - [x] Answer: Set the detection threshold higher (more conservative) for the first week so only obvious threats are flagged. Let's discuss more on this on how we can set this parameter.
 
 ### 7.4 Interface Requirements
 - **Do you need a user interface?**
@@ -351,24 +357,26 @@ How will you measure if the project is successful?
 ### 8.1 Timeline
 - **What is your project timeline?**
   - [x] Start date: 01/29/2025
-  - [x] Target completion date: AS SOON AS POSSIBLE
+  - [x] Target completion date: 1 month
   - [x] Key milestones:
     - Milestone 1: Data collection & Model Training (Date: TBD + 2 weeks)
-    - Milestone 2: Backend API & IMAP Integration (Date: TBD + 4 weeks)
+    - Milestone 2: Backend API & Database Setup for Data Collection
     - Milestone 3: UI Development & Integration Testing (Date: TBD + 6 weeks)
 
 ### 8.2 Team & Skills
 - **Who is on your team?**
   - [x] Team member 1: Le Hoang Nhat Duy (Supervisor/Expert)
-  - [x] Team member 2: Pham Thien Quy (Cybersecurity Analyst/Developer)
+  - [x] Team member 2: Le Hoang Bao Duy (Supervisor/Expert)
+  - [x] Team member 3: Pham Thien Quy (Cybersecurity Analyst/Developer)
 
 - **What skills do you have?**
   - [x] Machine learning / AI (Python, Libraries)
-  - [x] Backend development (API design)
+  - [x] Full Stack development (API design)
+  - [x] LLM and Agentic Workflow
   - [x] Cybersecurity (Threat analysis)
 
 - **What skills are you missing?**
-  - [x] Answer: Advanced Frontend development (UI/UX) and Legal/Compliance expertise.
+  - [x] Answer: Legal/Compliance expertise for Student Project Scope.
 
 ### 8.3 Budget
 - **What is your budget?**
@@ -376,36 +384,13 @@ How will you measure if the project is successful?
 
 ### 8.4 Non-Negotiable Constraints
   - 1. Must ensure user privacy (no leaking emails).
-  - 2. Must work with standard IMAP protocols.
   - 3. Must be completed within the semester timeline.
 
 ---
 
 ## Section 9: Competitive Analysis & Differentiation
 
-### 9.1 Existing Solutions
-- **What existing solutions have you researched?**
-  - [x] Gmail's built-in spam/phishing filter
-  - [x] Microsoft Defender for Office 365
-
-- **What are their strengths and weaknesses?**
-  - **Solution 1 (Gmail):**
-    - Strengths: Huge dataset, integrated, free.
-    - Weaknesses: Generic rules, can't be customized for specific niche needs, sometimes flags legit emails as spam.
-  - **Solution 2 (Defender):**
-    - Strengths: Deep integration with Windows, enterprise features.
-    - Weaknesses: Expensive, complex for average users.
-
-### 9.2 Your Unique Value Proposition
-- **How is your solution different/better?**
-  - [x] Answer: It offers a lightweight, customizable, and transparent protection layer that works across *any* email provider (not just Gmail/Outlook) and educates the user.
-
-- **What specific innovation are you bringing?**
-  - [ ] Novel ML approach
-  - [x] Better user experience (Focus on education/alerts)
-  - [x] Cost (free/cheaper)
-  - [x] Customization/flexibility (Personalized baselines)
-
+### Skip due to this is just a Student Project, not a commercial project.
 ---
 
 ## Section 10: Use Cases & Scenarios
@@ -483,7 +468,6 @@ How will you measure if the project is successful?
 | Risk | Mitigation Strategy |
 |------|---------------------|
 | Insufficient training data | Use data augmentation and synthetic data generation. |
-| Timeline too aggressive | Focus on MVP (Minimum Viable Product) features first; drop "Nice to haves". |
 
 ---
 
@@ -503,7 +487,6 @@ How will you measure if the project is successful?
 ### 13.2 Future Enhancements
   - 1. Browser Extension for webmail integration.
   - 2. Federated Learning (privacy-preserving model training).
-  - 3. Support for Enterprise Exchange servers.
 
 ### 13.3 Exit Strategy
   - [x] User data deletion process: "Delete Account" button wipes all database entries.
@@ -520,17 +503,7 @@ How will you measure if the project is successful?
   - [x] User guide (PDF/Wiki).
   - [x] Model training/evaluation reports (Jupyter Notebooks).
 
-### 14.2 Stakeholder Communication
-- **Non-technical stakeholders** (elevator pitch):
-  - "We are building an intelligent security guard for your email that learns your habits to stop hackers before they can trick you."
-
-- **Technical stakeholders** (high-level architecture):
-  - "A Python-based microservice architecture using FastAPI and PyTorch. It polls IMAP servers, processes email content through a BERT-based classifier, and utilizes a Redis queue for asynchronous alert dispatching."
-
-- **End users** (value proposition):
-  - "Browse your email with confidence. Our app silently watches for threats and taps you on the shoulder only when you need to be careful."
-
-### 14.3 Portfolio Presentation
+### 14.2 Portfolio Presentation
 **If this is a portfolio project, what do you want to showcase?**
   - [x] ML/AI skills (model development)
   - [x] System design (architecture)
@@ -543,17 +516,3 @@ How will you measure if the project is successful?
   - [x] Technical blog post (explaining the "Two-Model Approach").
 
 ---
-
-## Section 15: Final Checklist
-
-- [x] **We can clearly articulate the problem we're solving in 1-2 sentences**
-- [x] **We know who our target user is and what they need**
-- [x] **We have defined specific, measurable success criteria**
-- [x] **We understand what "unusual patterns" means in concrete terms**
-- [x] **We have a clear technical architecture approach**
-- [x] **We have addressed privacy and compliance requirements**
-- [x] **We have a realistic timeline and resource plan**
-- [x] **We know how this is different from existing solutions**
-- [x] **We have at least one detailed end-to-end use case**
-- [x] **We have identified and mitigated key risks**
-- [x] **We can explain this project to both technical and non-technical audiences**
