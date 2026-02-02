@@ -5,5 +5,7 @@ db = SQLAlchemy()
 from .round import Round
 from .email import Email
 from .log import Log
+from .api import API
+from .human_override import Override
 
-__all__ = ['db', 'Round', 'Email', 'Log']
+__all__ = ['db', 'Round', 'Email', 'Log', 'API', 'Override']

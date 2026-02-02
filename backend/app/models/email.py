@@ -12,7 +12,7 @@ class Email(db.Model):
     4. Optional: Human can override judge verdict
     """
 
-    __tablename__ = 'emails'
+    __tablename__ = 'EMAIL_TESTS'
 
     # PRIMARY KEY
     id = db.Column(db.Integer, primary_key=True)
@@ -25,7 +25,13 @@ class Email(db.Model):
         index=True          # Faster look up
     )
 
+    #  !!! WHAT IS THIS FOR? !!!
+    sequence_number = db.Column(db.Integer)
+
     # GENERATOR OUTPUTS
+
+    # *** Do we need to seperate (prompt, subject, body)? ***
+
     generated_content = db.Column(
         db.Text,
         nullable=False
@@ -50,13 +56,28 @@ class Email(db.Model):
         nullable=False
     )
 
+    # Generator latency (ms)
+    generator_latenc_ms = db.Column(
+        db.Integer,
+        nullable=True
+    )
+
     # DETECTOR OUTPUTS
+
+    # Detector verdict (phishing or not)
     detector_verdict = db.Column(
         db.String(20),
         nullable=False
     )
 
+    # Detector risk score (higher -> more risk)
+    detector_risk_score = db.Column(
+        db.Float,
+        nullable=True
+    )
+
     # Detector's confidence (0.0 to 1.0) -> Higher = more confident
+    # !!! DO WE WANT TO KEEP THIS !!!
     detector_confidence = db.Column(
         db.Float,
         nullable=True
@@ -69,7 +90,31 @@ class Email(db.Model):
         nullable=True
     )
 
+    # Detector latency in ms
+    detector_latency_ms = db.Column(
+        db.Integer,
+        nullable=True
+    )
+
     # JUDGE OUTPUTS
+
+    # Judge ground truth (minimum truth?)
+    judge_ground_truth = db.Column(
+        db.String(20),
+        nullable=False
+    )
+
+    # Verify judge
+    is_judge_correct = db.Column(
+        db.Boolean,
+        nullable=False
+    )
+
+    # Judge quality score (higher -> more accurate)
+    judge_quality_score = db.Column(
+        db.Integer,
+        nullable=False
+    )
 
     # Judge's verdict: " correct" or "incorrect"
     # Compares detector_verdict with is_phishing
@@ -82,6 +127,12 @@ class Email(db.Model):
     # Example: "Detector correctly identified phishing indicators"
     judge_reasoning = db.Column(
         db.Text,
+        nullable=True
+    )
+
+    # Judge latency in ms
+    judge_latency_ms = db.Column(
+        db.Integer,
         nullable=True
     )
 
@@ -147,13 +198,23 @@ class Email(db.Model):
         return {
             'id': self.id,
             'round_id': self.round_id,
+            'sequence_number': self.sequence_number,
             'generated_content': self.generated_content,
+            # 'generator_prompt'
+            # 'generated_email_subject'
+            # 'generated_email_body'
             'is_phishing': self.is_phishing,
             'generated_email_metadata': self.generated_email_metadata,
             'detector_verdict': self.detector_verdict,
             'detector_confidence': self.detector_confidence,
+            'detector_risk_score': self.detector_risk_score,
             'detector_reasoning': self.detector_reasoning,
+            'detector_latency_ms': self.detector_latency_ms,
             'judge_verdict': self.judge_verdict,
+            'judge_ground_truth': self.judge_ground_truth,
+            'is_judge_correct': self.is_judge_correct,
+            'judge_quality_score': self.judge_quality_score,
+            'judge_latency_ms': self.judge_latency_ms,
             'judge_reasoning': self.judge_reasoning,
             'manual_override': self.manual_override,
             'override_verdict': self.override_verdict,

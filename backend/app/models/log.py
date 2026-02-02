@@ -84,6 +84,7 @@ class Log(db.Model):
         """Helper method to create and save a log entry"""
 
         log = Log()
+        
         log.level = level
         log.message = message
         log.context = context
