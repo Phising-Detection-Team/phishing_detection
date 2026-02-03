@@ -18,7 +18,7 @@ class Log(db.Model):
     Stores events, errors, and important state changes
     """
 
-    __tablename__ = "logs"
+    __tablename__ = "Logs"
 
     id = db.Column(db.Integer, primary_key=True)
 

@@ -6,7 +6,7 @@ from datetime import datetime
 from . import db
 
 class Override(db.Model):
-    __tablename__ = 'MANUAL_OVERRIDES'
+    __tablename__ = 'Manual_Overrides'
 
     # Primary Key
     id = db.Column(db.Integer, primary_key=True)

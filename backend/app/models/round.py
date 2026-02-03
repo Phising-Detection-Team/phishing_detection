@@ -9,7 +9,7 @@ from datetime import datetime
 from . import db
 
 class Round(db.Model):
-    __tablename__ = 'ROUNDS'
+    __tablename__ = 'Rounds'
 
     # Primary Column
     id = db.Column(
@@ -96,7 +96,7 @@ class Round(db.Model):
     # One-to-many relationship with Email model
     # A round has many emails
     emails = db.relationship(
-        'Email',                        # Related model name
+        'Emails',                        # Related model name
         backref='round',                # Creates reverse reference: email.round
         lazy='dynamic',                 # Do not load all emails immediately (query when needed)
         cascade='all, delete-orphan'    # Delete emails when round is deleted
@@ -105,7 +105,7 @@ class Round(db.Model):
     # One-to-many relationship with Log model
     # A round has many log entries
     logs = db.relationship(
-        'Log',
+        'Logs',
         backref='round',
         lazy='dynamic',
         cascade='all, delete-orphan'

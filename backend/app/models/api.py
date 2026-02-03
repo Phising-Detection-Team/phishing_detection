@@ -6,7 +6,7 @@ from datetime import datetime
 from . import db
 
 class API(db.Model):
-    __tablename__ ='API_CALLS'
+    __tablename__ ='API_calls'
 
     # Primary Key
     id = db.Column(
