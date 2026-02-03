@@ -24,7 +24,7 @@ class Log(db.Model):
 
     round_id = db.Column(
         db.Integer,
-        db.ForeignKey('rounds.id', ondelete='CASCADE'),
+        db.ForeignKey('Rounds.id', ondelete='CASCADE'),
         nullable=True,      # If NULL, this is a system-level log
         index=True          # Index for faster filtering
     )
