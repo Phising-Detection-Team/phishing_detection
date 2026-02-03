@@ -12,7 +12,7 @@ class Email(db.Model):
     4. Optional: Human can override judge verdict
     """
 
-    __tablename__ = 'EMAIL_TESTS'
+    __tablename__ = 'Emails'
 
     # PRIMARY KEY
     id = db.Column(db.Integer, primary_key=True)
@@ -25,16 +25,26 @@ class Email(db.Model):
         index=True          # Faster look up
     )
 
-    #  !!! WHAT IS THIS FOR? !!!
-    sequence_number = db.Column(db.Integer)
-
     # GENERATOR OUTPUTS
-
-    # *** Do we need to seperate (prompt, subject, body)? ***
 
     generated_content = db.Column(
         db.Text,
         nullable=False
+    )
+
+    generated_prompt = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    generated_subject = db.Column(
+        db.String(100),
+        nullable=True
+    )
+
+    generated_body = db.Column(
+        db.Text,
+        nullable=True
     )
 
     # Ground truth: is this actually a phishing email?
@@ -198,11 +208,9 @@ class Email(db.Model):
         return {
             'id': self.id,
             'round_id': self.round_id,
-            'sequence_number': self.sequence_number,
-            'generated_content': self.generated_content,
-            # 'generator_prompt'
-            # 'generated_email_subject'
-            # 'generated_email_body'
+            'generated_prompt': self.generated_prompt,
+            'generated_email_subject': self.generated_subject,
+            'generated_email_body': self.generated_body,
             'is_phishing': self.is_phishing,
             'generated_email_metadata': self.generated_email_metadata,
             'detector_verdict': self.detector_verdict,
