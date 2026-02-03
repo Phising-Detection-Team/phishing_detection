@@ -15,9 +15,6 @@ from agents.judge_agent import JudgeAgent
 # Load environment variables
 load_dotenv()
 
-# Initialize the Kernel
-print("Initializing Semantic Kernel...")
-kernel = sk.Kernel()
 
 # Add AI Service
 api_key = os.getenv("OPENAI_API_KEY")
@@ -27,18 +24,8 @@ if not api_key:
     print("OPENAI_API_KEY=sk-...")
     exit(1)
 
-kernel.add_service(
-    OpenAIChatCompletion(
-        service_id="openai",
-        ai_model_id="gpt-4o",  # Using gpt-4o for larger context window (128k tokens)
-        api_key=api_key
-    )
-)
-
-print("Kernel initialized with OpenAI service\n")
-
 # Magic starts here
-async def ai_orchestrate(goal: str):
+async def ai_orchestrate(goal: str, kernel: sk.Kernel) -> str | None:
     """AI-powered orchestration using function calling (modern approach)"""
 
     print(f"\n=== AI-POWERED ORCHESTRATION ===")
@@ -108,6 +95,20 @@ async def ai_orchestrate(goal: str):
 async def main():
     """Main orchestration function using AI-powered function calling."""
 
+    # Initialize the Kernel
+    print("Initializing Semantic Kernel...")
+    kernel = sk.Kernel()
+
+    kernel.add_service(
+        OpenAIChatCompletion(
+            service_id="openai",
+            ai_model_id="gpt-4o",  # Using gpt-4o for larger context window (128k tokens)
+            api_key=api_key
+        )
+    )
+
+    print("Kernel initialized with OpenAI service\n")
+
     # Register our agent plugins
     generator = GeneratorAgent()
     detector = DetectorAgent()
@@ -137,7 +138,7 @@ async def main():
     Provide a complete summary of the competition results."""
 
     # Let AI orchestrate the workflow
-    await ai_orchestrate(goal)
+    await ai_orchestrate(goal, kernel)
 
     print("\n" + "="*60)
     print("🏁 COMPETITION COMPLETE")
