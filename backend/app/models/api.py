@@ -19,7 +19,7 @@ class API(db.Model):
         db.Integer,
         db.ForeignKey('Emails.id', ondelete='CASCADE'),
         nullable=False,
-        index=True
+        index=True                      
     )
 
     # Agent type (generator, detector, judge)
