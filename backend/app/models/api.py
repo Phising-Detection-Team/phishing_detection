@@ -17,7 +17,7 @@ class API(db.Model):
     # Foreign Key
     email_test_id = db.Column(
         db.Integer,
-        db.ForeignKey('email_test_id', ondelete='CASCADE'),
+        db.ForeignKey('Emails.id', ondelete='CASCADE'),
         nullable=False,
         index=True
     )

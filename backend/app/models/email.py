@@ -20,7 +20,7 @@ class Email(db.Model):
     # FOREIGN KEY
     round_id = db.Column(
         db.Integer,
-        db.ForeignKey('round_id', ondelete='CASCADE'),
+        db.ForeignKey('Rounds.id', ondelete='CASCADE'),
         nullable=False,
         index=True          # Faster look up
     )

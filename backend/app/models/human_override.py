@@ -14,7 +14,7 @@ class Override(db.Model):
     # Foreign Key
     email_test_id = db.Column(
         db.Integer,
-        db.ForeignKey(db.Integer, ondelete='CASCADE'),
+        db.ForeignKey('Emails.id', ondelete='CASCADE'),
         nullable=False,
         index=True
     )
