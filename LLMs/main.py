@@ -1,16 +1,11 @@
 import sys
-from pathlib import Path
-
-# Add project root to Python path so we can import from backend
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-import semantic_kernel as sk
 import asyncio
 import os
+import semantic_kernel as sk
 from datetime import datetime, UTC
 from dotenv import load_dotenv
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from backend.app.models import db, Round
+# from backend.app.models import db, Round
 from utils.db_utils import init_db
 
 # Import services (self-contained with their own entities)
@@ -18,15 +13,22 @@ from services.orchestration_agent_service import OrchestrationAgentService
 from services.generator_agent_service import GeneratorAgentService
 from services.detector_agent_service import DetectorAgentService
 
-# Load environment variables
 load_dotenv()
 
 # Constants
 OPENAI_MODEL = "gpt-4o-mini"
 DEFAULT_MAX_ROUNDS = 10
 
-# Initialize Semantic Kernel with OpenAI
-def initialize_kernel() -> sk.Kernel:
+def create_minimal_app():
+    """Create a minimal Flask app context for DB access."""
+    app = Flask(__name__)
+    # Ensure this matches your backend config
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
+    return app
+
+def initialize_kernel():
     """Initialize the Semantic Kernel with OpenAI service."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
@@ -187,7 +189,7 @@ async def main():
 
         # Calculate total cost for this round from API calls
         total_round_cost = sum(
-            email.get('generator_agent_api_cost', 0) + email.get('detector_agent_api_cost', 0)
+            int(email.get('generator_agent_api_cost', 0)) + int(email.get('detector_agent_api_cost', 0))
             for email in round_emails
         )
 
