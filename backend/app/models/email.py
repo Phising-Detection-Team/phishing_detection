@@ -67,7 +67,7 @@ class Email(db.Model):
     )
 
     # Generator latency (ms)
-    generator_latenc_ms = db.Column(
+    generator_latency_ms = db.Column(
         db.Integer,
         nullable=True
     )
