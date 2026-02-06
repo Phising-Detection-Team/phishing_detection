@@ -1,148 +1,118 @@
+import sys
+from pathlib import Path
+
+# Add project root to Python path so we can import from backend
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import semantic_kernel as sk
 import asyncio
 import os
 from dotenv import load_dotenv
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import OpenAIChatPromptExecutionSettings
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.contents import ChatHistory
+from backend.app.models import db
 
 # Import our agents
 from agents.generator_agent import GeneratorAgent
 from agents.detector_agent import DetectorAgent
 from agents.judge_agent import JudgeAgent
+from agents.orchestration_agent import OrchestrationAgent
 
 # Load environment variables
 load_dotenv()
 
+# Constants
+OPENAI_MODEL = "gpt-5-mini-2025-08-07"
+DEFAULT_MAX_ROUNDS = 10
 
-# Add AI Service
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    print("⚠️  Please set OPENAI_API_KEY in your .env file")
-    print("Example .env file:")
-    print("OPENAI_API_KEY=sk-...")
-    exit(1)
+# Initialize Semantic Kernel with OpenAI
+def initialize_kernel() -> sk.Kernel:
+    """Initialize the Semantic Kernel with OpenAI service."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        print("⚠️  Please set OPENAI_API_KEY in your .env file")
+        print("Example .env file:")
+        print("OPENAI_API_KEY=sk-...")
+        exit(1)
 
-# Magic starts here
-async def ai_orchestrate(goal: str, kernel: sk.Kernel) -> str | None:
-    """AI-powered orchestration using function calling (modern approach)"""
-
-    print(f"\n=== AI-POWERED ORCHESTRATION ===")
-
-    # Get the chat completion service
-    chat_service = kernel.get_service("openai")
-
-    # Create chat history with the orchestration goal
-    chat_history = ChatHistory()
-    chat_history.add_system_message(
-        "You are an intelligent orchestrator. You have access to three agent functions: "
-        "generator-generate_scam (generates scam emails), "
-        "detector-detect_scam (detects scams in emails), and "
-        "judge-judge_match (judges the competition). "
-        "Call these functions in the correct order to achieve the user's goal. "
-        "After calling all necessary functions, ALWAYS OUT THE FULL CONTENT OF THE SCAM EMAIL then details of detection analysis, and judgment summary."
-    )
-    chat_history.add_user_message(goal)
-
-    # Enable auto function calling
-    execution_settings = OpenAIChatPromptExecutionSettings(
-        max_tokens=1000,
-        temperature=0.7,
-        function_choice_behavior=FunctionChoiceBehavior.Auto(
-            filters={"included_plugins": ["generator", "detector", "judge"]}
-        )
-    )
-
-    print("🤖 AI is planning and executing the workflow...\n")
-
-    # Let AI orchestrate by calling functions
-    round = 1
-    while True:
-        response = await chat_service.get_chat_message_contents(
-            chat_history=chat_history,
-            settings=execution_settings,
-            kernel=kernel
-        )
-
-        message = response[0]
-
-        # Check if AI called any functions
-        if hasattr(message, 'items'):
-            for item in message.items:
-                if hasattr(item, 'function_name'):
-                    print(f"round {round}: Calling {item.plugin_name}.{item.function_name}...")
-                    round += 1
-
-        # Add AI response to history
-        chat_history.add_message(message)
-
-        # Check if we're done (no more function calls)
-        if not message.items or not any(hasattr(item, 'function_name') for item in message.items):
-            # AI has finished orchestrating
-            final_response = str(message.content)
-            print("\n" + "="*60)
-            print("📊 AI ORCHESTRATION COMPLETE")
-            print("="*60)
-            print(f"\n{final_response}\n")
-            return final_response
-
-        # Continue the conversation loop for more function calls
-        if round > 10:  # Safety limit
-            print("⚠️ Maximum rounds reached")
-            break
-
-async def main():
-    """Main orchestration function using AI-powered function calling."""
-
-    # Initialize the Kernel
     print("Initializing Semantic Kernel...")
     kernel = sk.Kernel()
 
     kernel.add_service(
         OpenAIChatCompletion(
             service_id="openai",
-            ai_model_id="gpt-4o",  # Using gpt-4o for larger context window (128k tokens)
+            ai_model_id=OPENAI_MODEL,
             api_key=api_key
         )
     )
 
-    print("Kernel initialized with OpenAI service\n")
+    print(f"Kernel initialized with OpenAI service ({OPENAI_MODEL})\n")
+    return kernel
 
-    # Register our agent plugins
+# Register agents with the kernel
+def register_agents(kernel: sk.Kernel) -> None:
+    """Register agent plugins with the kernel."""
     generator = GeneratorAgent()
     detector = DetectorAgent()
     judge = JudgeAgent()
 
-    # Add plugins to the kernel
     kernel.add_plugin(generator, "generator")
     kernel.add_plugin(detector, "detector")
     kernel.add_plugin(judge, "judge")
 
-    # Confirm plugins are registered
     print("✅ All agents initialized successfully!")
-    print(f"   - Generator Agent: Ready to create scam emails")
-    print(f"   - Detector Agent: Ready to detect scams")
-    print(f"   - Judge Agent: Ready to evaluate matches")
+    print("   - Generator Agent: Ready to create scam emails")
+    print("   - Detector Agent: Ready to detect scams")
+    print("   - Judge Agent: Ready to evaluate matches\n")
 
-    print("\n" + "="*60)
-    print("🤖 AI-POWERED ORCHESTRATION WITH FUNCTION CALLING")
-    print("="*60 + "\n")
+async def main():
+    """Main orchestration function using AI-powered function calling."""
+    # Initialize kernel and register agents
+    kernel = initialize_kernel()
+    register_agents(kernel)
 
-    # Define the goal for AI orchestration
-    goal = """Run a scam detection competition:
-    1. Generator agent generates a random scam email
-    2. Detector agent detects if the generated email is a scam with detailed analysis
-    3. Judge agent evaluates both the generator and detector agents' performance and determines the winner
+    # Get max rounds from user input (with default)
+    try:
+        user_input = input("\nEnter maximum rounds for orchestration (default 10): ").strip()
+        max_rounds = int(user_input) if user_input else DEFAULT_MAX_ROUNDS
+        if max_rounds <= 0:
+            print("Invalid input. Using default value.")
+            max_rounds = DEFAULT_MAX_ROUNDS
+    except ValueError:
+        print("Invalid input. Using default value.")
+        max_rounds = DEFAULT_MAX_ROUNDS
 
-    Provide a complete summary of the competition results."""
-
-    # Let AI orchestrate the workflow
-    await ai_orchestrate(goal, kernel)
+    # Run AI orchestration and get result as dict
+    orchestration_agent = OrchestrationAgent()
+    result = await orchestration_agent.ai_orchestrate(kernel, max_rounds)
 
     print("\n" + "="*60)
     print("🏁 COMPETITION COMPLETE")
     print("="*60)
+
+    # Result is now a dict that can be merged with other JSON
+    if result:
+        print(f"\n✅ Result stored as dictionary with {len(result)} keys")
+        print(f"Keys: {list(result.keys())}")
+
+        other_json_data = {
+            'generated_prompt': 'Example prompt used to generate scam email',
+            'generator_latenc_ms': 1234,
+            'detector_latency_ms': 2345,
+            'judge_latency_ms': 3456,
+            'is_judge_correct': True,
+            'manual_override': False,
+            'override_verdict': None,
+            'override_reason': None,
+            'overridden_by': None,
+            'overridden_at': None,
+            'created_at': '2024-08-15T12:34:56Z',
+            'processing_time': 7.035,
+            'cost': 0.45
+        }
+        # Example: You can now merge with other JSON
+        # merged_result = {**result, **other_json_data}
+    else:
+        print("\n❌ No result returned")
 
 if __name__ == "__main__":
     asyncio.run(main())
