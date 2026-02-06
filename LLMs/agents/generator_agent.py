@@ -1,12 +1,58 @@
 import os
 import random
+from pathlib import Path
 from semantic_kernel.functions import kernel_function
 from openai import AsyncOpenAI
+
+
+class PromptLoader:
+    """Utility class to load prompt templates from prompts.md file."""
+
+    _prompts = None
+
+    @classmethod
+    def load_prompts(cls):
+        """Load and parse prompts from prompts.md file."""
+        if cls._prompts is not None:
+            return cls._prompts
+
+        prompts_file = Path(__file__).parent / 'prompts.md'
+        with open(prompts_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        cls._prompts = {}
+
+        # Parse generator prompts
+        if '## Generator Agent Prompts' in content:
+            gen_section = content[content.find('## Generator Agent Prompts'):]
+
+            if '### System Prompt' in gen_section:
+                start = gen_section.find('### System Prompt')
+                end = gen_section.find('```', start + 20)
+                next_section = gen_section.find('###', end)
+                system_content = gen_section[start:next_section].split('```')[1].strip()
+                cls._prompts['generator_system'] = system_content
+
+            if '### Generation Prompt' in gen_section:
+                start = gen_section.find('### Generation Prompt')
+                end = gen_section.find('```', start + 25)
+                next_section = gen_section.find('---', end)
+                generation_content = gen_section[start:next_section].split('```')[1].strip()
+                cls._prompts['generator_generation'] = generation_content
+
+        return cls._prompts
+
+    @classmethod
+    def get_prompt(cls, prompt_name: str) -> str:
+        """Get a specific prompt by name."""
+        prompts = cls.load_prompts()
+        return prompts.get(prompt_name, '')
+
 
 class GeneratorAgent:
     """
     Generator Agent: Attempts to create convincing scam emails.
-    This agent uses OpenAI GPT-4 to generate various types of scam emails.
+    This agent uses OpenAI GPT-5 Mini to generate various types of scam emails.
     """
 
     def __init__(self):
@@ -15,7 +61,8 @@ class GeneratorAgent:
         if not api_key:
             raise ValueError("OPENAI_API_KEY environment variable is required")
         self.client = AsyncOpenAI(api_key=api_key)
-        self.model = "gpt-4o"
+        self.model = "gpt-5-mini"
+        self.prompts = PromptLoader.load_prompts()
 
     @kernel_function(
         description="Generates a scam email based on a given scenario or random type",
@@ -48,71 +95,21 @@ class GeneratorAgent:
             ]
             scenario = random.choice(scam_types)
 
-        prompt = f"""YOU ARE AN EXTREMELY SOPHISTICATED SCAMMER with decades of experience in social engineering and psychological manipulation.
+        # Load prompt template and format with scenario
+        prompt_template = PromptLoader.get_prompt('generator_generation')
+        prompt = prompt_template.format(scenario=scenario)
 
-        Your mission is to create a highly convincing {scenario} scam email that would fool even cautious recipients.
-
-        ADVANCED TACTICS TO EMPLOY:
-        1. PSYCHOLOGICAL MANIPULATION:
-           - Create emotional triggers (fear, greed, urgency, curiosity, authority)
-           - Use reciprocity principles (offer something first)
-           - Exploit cognitive biases (authority bias, scarcity, social proof)
-           - Build false trust through personalization
-
-        2. AUTHENTICITY ENGINEERING:
-           - Use specific, realistic details: real company names, actual addresses, believable phone numbers
-           - Include proper corporate language and terminology
-           - Add authentic-looking email signatures with titles, departments, contact info
-           - Reference real events, seasons, or timely contexts
-           - Use professional formatting with logos (describe them), headers, footers
-
-        3. SUBTLE MANIPULATION:
-           - Avoid obvious red flags like ALL CAPS or excessive exclamation marks
-           - Use proper grammar and spelling (sophisticated scammers do this)
-           - Create plausible scenarios with logical reasoning
-           - Include legitimate-sounding reference numbers, case IDs, or tracking codes
-           - Add subtle time pressure without being overtly threatening
-
-        4. SOCIAL ENGINEERING TACTICS:
-           - Build rapport with friendly, helpful tone
-           - Establish credibility through specific details
-           - Create a sense of exclusivity or special opportunity
-           - Use authority figures or impersonate trusted entities convincingly
-           - Include callback mechanisms (phone numbers, reply addresses) that seem real
-
-        5. TECHNICAL SOPHISTICATION:
-           - Mention security measures to appear legitimate (e.g., "for your security...")
-           - Include realistic URLs that could pass casual inspection
-           - Reference multi-factor authentication or security protocols
-           - Use corporate jargon and industry-specific terminology
-
-        CRITICAL REQUIREMENTS:
-        - Fill in ALL specific details: names (first and last), companies, amounts, dates, times, reference numbers
-        - NO placeholders like [NAME], [AMOUNT], [COMPANY] - be creative and specific
-        - Make the email look like it came from a real organization
-        - The scam should be subtle enough that it requires careful analysis to detect
-        - Include realistic email metadata (From, Date, Subject)
-
-        EVALUATION CRITERIA:
-        You will be scored on:
-        - Sophistication and subtlety (avoiding obvious red flags)
-        - Psychological impact and emotional manipulation
-        - Authenticity and attention to detail
-        - Social engineering effectiveness
-        - Overall believability
-
-        Generate ONLY the email content with Subject and Body. Make it your masterpiece.
-        """
+        # Load system prompt
+        system_prompt = PromptLoader.get_prompt('generator_system')
 
         # Call OpenAI API
         response = await self.client.chat.completions.create(
             model=self.model,
             messages=[
-                {"role": "system", "content": "You are a world-class social engineering expert and sophisticated scam email generator for advanced security training purposes. Your emails are so convincing they require expert analysis to detect."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.95,
-            max_tokens=1500
+            max_completion_tokens=2000
         )
 
         return response.choices[0].message.content
