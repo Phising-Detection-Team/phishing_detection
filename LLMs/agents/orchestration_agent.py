@@ -5,7 +5,6 @@ from pathlib import Path
 import semantic_kernel as sk
 import json
 
-
 class PromptLoader:
     """Utility class to load prompt templates from prompts.md file."""
 

@@ -15,7 +15,7 @@ class API(db.Model):
     )
 
     # Foreign Key
-    email_test_id = db.Column(
+    email_id = db.Column(
         db.Integer,
         db.ForeignKey('Emails.id', ondelete='CASCADE'),
         nullable=False,
@@ -53,7 +53,7 @@ class API(db.Model):
         """Converting to dictionary for JSON responses"""
         return {
             'id': self.id,
-            'email_test_id': self.email_test_id,
+            'email_id': self.email_id,
             'agent_type': self.agent_type,
             'model_name': self.model_name,
             'token_used': self.token_used,
