@@ -1,0 +1,15 @@
+# Database requirements
+Flask-SQLAlchemy==3.1.1
+alembic==1.18.3
+
+# LLMs requirements
+# Semantic Kernel for orchestration with function calling support
+semantic-kernel>=1.18.0
+# OpenAI API (for main orchestration and Generator Agent)
+openai>=1.0.0
+# Anthropic Claude API (for Detector Agent)
+anthropic>=0.18.0
+# Google Gemini API (for Judge Agent)
+google.genai==1.39.0
+# Environment variables
+python-dotenv>=1.2.1

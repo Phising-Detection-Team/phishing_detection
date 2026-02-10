@@ -233,7 +233,8 @@ SECRET_KEY=your_secret_key_here
 ## 👥 Team
 
 - **Le Hoang Nhat Duy** - Project Supervisor / Expert
-- **Pham Thanh Hoan** - Developer / Engineer
+- **Le Hoang Bao Duy** - Developer / Engineer
+- **Huynh Thanh Dang** - Developer / Engineer
 - **Pham Thien Quy** - Cybersecurity Analyst / Developer
 
 **Team Structure**: First-time multi-person project with flexible timeline and collaborative learning focus.
