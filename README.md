@@ -531,7 +531,7 @@ phishing_detection/
 ## 👥 Team
 
 - **Le Hoang Nhat Duy** - Project Supervisor / Expert
-- **Pham Thanh Hoan** - Developer / Engineer
+- **Le Hoang Bao Duy** - Developer / Engineer
 - **Pham Thien Quy** - Cybersecurity Analyst / Developer
 
 **Team Structure**: First-time multi-person project with flexible timeline and collaborative learning focus.
