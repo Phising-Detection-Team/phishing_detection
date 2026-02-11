@@ -1,7 +1,7 @@
 from semantic_kernel.functions import kernel_function
-from LLMs.services.base_service import BaseService
-from LLMs.entities.detector_agent_entity import DetectorAgentEntity
-from LLMs.utils.api_utils import (
+from services.base_service import BaseService
+from entities.detector_agent_entity import DetectorAgentEntity
+from utils.api_utils import (
     track_api_call,
     extract_anthropic_response,
     extract_anthropic_tokens

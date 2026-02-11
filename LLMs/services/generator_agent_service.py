@@ -1,9 +1,9 @@
 import random
 from typing import Optional
 from semantic_kernel.functions import kernel_function
-from LLMs.services.base_service import BaseService
-from LLMs.entities.generator_agent_entity import GeneratorAgentEntity
-from LLMs.utils.api_utils import (
+from services.base_service import BaseService
+from entities.generator_agent_entity import GeneratorAgentEntity
+from utils.api_utils import (
     track_api_call,
     extract_openai_response,
     extract_openai_tokens

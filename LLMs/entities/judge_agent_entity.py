@@ -1,6 +1,6 @@
 import os
 from google import genai
-from LLMs.entities.base_entity import BaseEntity
+from entities.base_entity import BaseEntity
 
 
 class JudgeAgentEntity(BaseEntity):

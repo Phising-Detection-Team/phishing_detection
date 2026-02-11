@@ -3,8 +3,8 @@ from typing import Optional
 from semantic_kernel.functions import kernel_function
 from google.genai import types
 from tokencost import calculate_prompt_cost, calculate_completion_cost
-from LLMs.services.base_service import BaseService
-from LLMs.entities.judge_agent_entity import JudgeAgentEntity
+from services.base_service import BaseService
+from entities.judge_agent_entity import JudgeAgentEntity
 
 
 class JudgeAgentService(BaseService):

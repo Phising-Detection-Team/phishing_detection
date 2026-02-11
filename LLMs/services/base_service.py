@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from LLMs.entities.base_entity import BaseEntity
+    from entities.base_entity import BaseEntity
 
 
 class BaseService:

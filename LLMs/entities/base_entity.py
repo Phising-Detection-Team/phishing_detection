@@ -1,4 +1,4 @@
-from LLMs.utils.prompts import PROMPTS, get_prompt
+from utils.prompts import PROMPTS, get_prompt
 
 
 class BaseEntity:

@@ -7,7 +7,7 @@ Usage Example:
 --------------
 For a new agent (e.g., Judge Agent using Google Gemini):
 
-    from LLMs.utils.api_utils import track_api_call, extract_google_response, extract_google_tokens
+    from utils.api_utils import track_api_call, extract_google_response, extract_google_tokens
 
     # Define your API call
     async def make_api_call():
