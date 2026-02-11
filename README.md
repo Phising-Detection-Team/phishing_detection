@@ -2,7 +2,7 @@
 
 > **AI-Powered Email Security through Adversarial Training**
 
-An intelligent email security system that uses frontier AI models in a three-agent architecture to detect phishing emails. The system employs competitive learning where a Generator creates realistic phishing emails, a Detector identifies them, and a Judge evaluates both, continuously improving detection accuracy through offline training rounds.
+An intelligent email security system that uses frontier AI models in a three-agent architecture to detect phishing emails. The system employs competitive learning where a Generator creates realistic phishing emails, a Detector identifies them and continuously improving detection accuracy through offline training rounds.
 
 ---
 
@@ -46,14 +46,14 @@ This system addresses the growing sophistication of phishing attacks by using AI
 
 ### Multi-Agent System (LLMs Directory)
 
-A sophisticated multi-agent AI system using **Semantic Kernel orchestration** with AI-powered function calling where three specialized agents compete in an adversarial competition.
+A sophisticated multi-agent AI system using **Semantic Kernel orchestration** with AI-powered function calling where two specialized agents compete in an adversarial competition.
 
 #### 🎭 Agents
 
 **1. Generator Agent (OpenAI GPT-4o)**
 - **Goal**: Create highly convincing and sophisticated scam emails
 - **Strategy**: Advanced psychological manipulation, authenticity engineering, subtle manipulation
-- **Capabilities**: 
+- **Capabilities**:
   - Various scam types (phishing, lottery, Nigerian prince, tech support, CEO fraud)
   - Professional formatting and specific details
   - Social engineering tactics
@@ -68,11 +68,6 @@ A sophisticated multi-agent AI system using **Semantic Kernel orchestration** wi
   - **Layer 4**: Technical Analysis (links, attachments, anomalies)
 - **Scoring**: Accuracy (0-25), analytical depth (0-25), indicator identification (0-25), reasoning quality (0-25)
 
-**3. Judge Agent (Google Gemini 2.5 Flash)**
-- **Goal**: Evaluate both agents' performance and determine the winner
-- **Strategy**: Comprehensive adversarial match evaluation
-- **Output**: Detailed evaluation report with scores, analysis, and winner declaration
-
 #### Quick Start (LLMs Implementation)
 
 ```bash
@@ -82,25 +77,50 @@ cd LLMs
 pip install -r requirements.txt
 
 # Configure API keys (.env file)
-OPENAI_API_KEY=your_key_here
-ANTHROPIC_API_KEY=your_key_here
-GOOGLE_API_KEY=your_key_here
+cp .env.example .env
+# Edit .env with your keys:
+# OPENAI_API_KEY=your_key_here
+# ANTHROPIC_API_KEY=your_key_here
+# GOOGLE_API_KEY=your_key_here (optional, for Judge Agent)
 
 # Run the multi-agent competition
 python main.py
+
+# You'll be prompted for:
+# - Number of rounds (default: 1)
+# - Number of emails per round (default: 1)
+```
+
+#### Architecture Example
+
+```python
+# Entity-Service pattern with optional binding
+from entities.generator_agent_entity import GeneratorAgentEntity
+from services.generator_agent_service import GeneratorAgentService
+
+# Create entity (configuration + API client)
+entity = GeneratorAgentEntity()
+
+# Bind entity to service for Semantic Kernel
+service = GeneratorAgentService(entity=entity)
+
+# Register directly with kernel (no adapter needed)
+kernel.add_plugin(service, "generator")
+
+# Service automatically uses bound entity
+result = await service.generate_scam(scenario="phishing")
 ```
 
 ---
 
 ## ✨ Key Features
 
-### Three-Agent Competition System (Phase 1 - In Progress)
+### Two-Agent Competition System (Phase 1 - In Progress)
 
 - **Generator Agent**: Creates synthetic phishing emails for training
 - **Detector Agent**: Analyzes emails and identifies threats
-- **Judge Agent**: Evaluates detector accuracy and generator quality
 - **AI Orchestration**: Semantic Kernel with function calling
-- **Multi-Model Architecture**: GPT-4o, Claude Sonnet 4.5, Gemini 2.5 Flash
+- **Multi-Model Architecture**: GPT-4o, Claude Sonnet 4.5
 
 ### Real-Time Monitoring Dashboard (Phase 2 - Planned)
 
@@ -124,24 +144,27 @@ python main.py
 ### Three-Agent Architecture
 
 ```
-┌──────────────────┐
-│  Generator Agent │ → Creates phishing emails with metadata
-│   (GPT-4o)       │    • Psychological manipulation
-└────────┬─────────┘    • Authenticity engineering
-         │              • Social engineering tactics
-         ▼
-┌──────────────────┐
-│  Detector Agent  │ → Multi-layered analysis
-│ (Claude Sonnet)  │    • Structural analysis
-└────────┬─────────┘    • Content analysis
-         │              • Psychological analysis
-         │              • Technical analysis
-         ▼
-┌──────────────────┐
-│   Judge Agent    │ → Evaluates both agents
-│ (Gemini Flash)   │    • Scores performance (0-100)
-└──────────────────┘    • Identifies strengths/weaknesses
-                        • Declares winner
+┌─────────────────────┐
+│ Orchestration Agent │ → AI-powered workflow management
+│    (GPT-4o)         │    • Function calling coordination
+└──────────┬──────────┘    • Multi-round processing
+           │               • Status tracking & metrics
+           ▼
+┌──────────────────┐       ┌──────────────────┐
+│  Generator Agent │       │  Detector Agent  │
+│   (GPT-4o)       │       │ (Claude Sonnet)  │
+└────────┬─────────┘       └────────┬─────────┘
+         │                          │
+         ▼                          ▼
+   Creates phishing            Multi-layered
+   emails with                 threat analysis
+   metadata                    & detection
+
+   Entity-Service Architecture:
+   ┌─────────┐   Optional    ┌─────────┐
+   │ Entity  │◄────Binding──►│ Service │
+   │ (State) │               │ (Logic) │
+   └─────────┘               └─────────┘
 ```
 
 ### AI-Powered Orchestration
@@ -151,15 +174,31 @@ The system uses **Semantic Kernel** for intelligent workflow management:
 - Function calling for agent coordination
 - Async/await pattern for efficient API calls
 - Safety limits to prevent infinite loops
+- Multi-round support with configurable batch sizes
 
 ### Competition Round Lifecycle
 
-1. **Initialize**: Configure round (100 emails default)
-2. **Generate**: Create synthetic phishing/legitimate emails
-3. **Detect**: Analyze each email for threat indicators
-4. **Judge**: Evaluate detector performance
-5. **Store**: Persist results in PostgreSQL (planned)
-6. **Analyze**: Display metrics and insights (planned)
+1. **Initialize**: Configure rounds and emails per round
+2. **Generate**: Create synthetic phishing/legitimate emails (Generator Agent)
+3. **Detect**: Analyze each email for threat indicators (Detector Agent)
+4. **Track**: Record API costs, token usage, and processing time
+5. **Store**: Persist results in PostgreSQL (optional, configurable)
+6. **Analyze**: Display metrics and insights per round
+
+### Entity-Service Architecture
+
+**Entities** (State Holders):
+- API keys, credentials, model identifiers
+- API client instances (AsyncOpenAI, AsyncAnthropic, etc.)
+- Prompt access via centralized prompts.py
+- **Completely independent** - no service dependency
+
+**Services** (Operation Providers):
+- Core functionality (generate, detect, orchestrate)
+- API calls with error handling
+- Cost/performance tracking
+- **Dual-mode support**: Bound entity OR entity parameter
+- Direct Semantic Kernel registration
 
 ### Technology Layers
 
@@ -174,13 +213,16 @@ The system uses **Semantic Kernel** for intelligent workflow management:
 ## 🛠️ Technology Stack
 
 ### Current Implementation (LLMs)
-- **Orchestration**: Semantic Kernel with function calling
-- **AI Models**: 
-  - OpenAI GPT-4o (generation & orchestration, 128k context)
+- **Architecture**: Entity-Service pattern with optional binding
+- **Orchestration**: Semantic Kernel with AI function calling
+- **AI Models**:
+  - OpenAI GPT-4o-mini (generation & orchestration, 128k context)
   - Anthropic Claude Sonnet 4.5 (detection & analysis)
-  - Google Gemini 2.5 Flash (evaluation & judging)
-- **Language**: Python with async/await
+  - Google Gemini 2.5 Flash (judging, optional)
+- **Language**: Python 3.11+ with async/await
 - **APIs**: OpenAI, Anthropic, Google Generative AI
+- **Cost Tracking**: tokencost library for accurate pricing
+- **Utilities**: Centralized prompts, API tracking, DB integration
 
 ### Backend (Planned - Flask Implementation)
 - **Framework**: Flask 3.1.2
@@ -222,29 +264,42 @@ cp .env.example .env
 
 # Run the multi-agent competition
 python main.py
+
+# Interactive prompts:
+# Enter number of rounds: 3
+# Enter number of emails per round: 5
 ```
 
 ### Example Output
 
 ```
-🤖 AI-POWERED ORCHESTRATION WITH FUNCTION CALLING
+🚀 STARTING AI-POWERED MULTI-ROUND ORCHESTRATION
+   Rounds: 3
+   Emails per round: 5
 ============================================================
 
-AI is planning and executing the workflow...
+📝 ROUND 1/3
+============================================================
+   Generating email 1/5...
+   ✓ Email 1 generated and analyzed
+      Generator status: ✓
+      Detector status: ✓
+   ...
 
-round 1: Calling generator.generate_scam...
-round 2: Calling detector.detect_scam...
-round 3: Calling judge.judge_match...
+✅ Round 1 complete: 5 emails generated
+   Generator successes: 5/5
+   Detector successes: 5/5
+   Processing time: 42s
+   Total cost: $0.0234500
 
 ============================================================
 📊 AI ORCHESTRATION COMPLETE
 ============================================================
 
-[Complete summary with generated email, detection analysis, and judgment]
-
-============================================================
-🏁 COMPETITION COMPLETE
-============================================================
+📊 Summary:
+   Total rounds: 3
+   Emails per round: 5
+   Total emails generated: 15
 ```
 
 ### Full Stack Setup (Future Flask/React Implementation)
@@ -332,19 +387,26 @@ SECRET_KEY=your_secret_key_here
 ### Heterogeneous Multi-Model Architecture
 
 This system demonstrates a **heterogeneous multi-model approach**:
-- **OpenAI GPT-4o**: Orchestration and generation (large context window)
-- **Claude Sonnet 4.5**: Advanced detection and analysis
-- **Google Gemini 2.5 Flash**: Fast evaluation and judging
+- **OpenAI GPT-4o-mini**: Orchestration and generation (128k context window, cost-effective)
+- **Claude Sonnet 4.5**: Advanced detection and analysis (200k context window)
+- **Google Gemini 2.5 Flash**: Fast evaluation and judging (optional)
 
 Each agent uses a different AI model optimized for its specific task.
 
 ### Configuration & Customization
 
-Edit files in the `LLMs` directory:
-- **main.py**: Modify orchestration goal and safety limits
-- **agents/generator_agent.py**: Adjust scam types and generation prompts
-- **agents/detector_agent.py**: Modify analysis layers and indicators
-- **agents/judge_agent.py**: Change evaluation criteria and scoring
+**Architecture Files:**
+- **entities/**: Configure API keys, models, and clients
+  - `generator_agent_entity.py`: OpenAI configuration
+  - `detector_agent_entity.py`: Anthropic configuration
+  - `orchestration_agent_entity.py`: Workflow state
+- **services/**: Modify business logic and operations
+  - `generator_agent_service.py`: Email generation logic
+  - `detector_agent_service.py`: Threat detection logic
+  - `orchestration_agent_service.py`: Workflow coordination
+- **agents/prompts.py**: Centralized prompt templates for all agents
+- **utils/**: API tracking, cost calculation, database integration
+- **main.py**: Entry point, configure rounds and batch size
 
 ---
 
@@ -354,14 +416,17 @@ Edit files in the `LLMs` directory:
 
 #### ✅ Completed
 - **Multi-agent system implementation** (LLMs directory)
-  - Generator Agent with GPT-4o
+  - Generator Agent with OpenAI GPT-4o-mini
   - Detector Agent with Claude Sonnet 4.5
-  - Judge Agent with Gemini 2.5 Flash
-  - Semantic Kernel orchestration with function calling
-- **Database schema design** (Email model)
+  - Orchestration Agent with AI function calling
+  - Entity-Service architecture with optional binding
+  - Centralized prompts system
+  - API cost tracking and performance metrics
+  - Multi-round processing with batch support
+- **Database schema design** (Email, Round, Log models)
 - **SQLAlchemy models** with proper relationships
 - **Requirements.txt** with comprehensive dependencies
-- **Project architecture documentation**
+- **Project architecture documentation** (LLMs/ARCHITECTURE.md)
 - **Detailed project scoping questionnaire**
 
 #### 🔄 In Progress
@@ -388,13 +453,42 @@ Edit files in the `LLMs` directory:
 phishing_detection/
 ├── LLMs/                          # ✅ Current working implementation
 │   ├── agents/
-│   │   ├── generator_agent.py    # GPT-4o scam email generator
-│   │   ├── detector_agent.py     # Claude Sonnet detector
-│   │   └── judge_agent.py        # Gemini judge
-│   ├── main.py                   # Semantic Kernel orchestrator
-│   ├── requirements.txt
-│   └── README.md
-├──🎯 Use Cases
+│   │   └── prompts.py            # Centralized prompt templates
+│   ├── entities/                 # State holders (API keys, clients, config)
+│   │   ├── base_entity.py
+│   │   ├── generator_agent_entity.py    # OpenAI configuration
+│   │   ├── detector_agent_entity.py     # Anthropic configuration
+│   │   └── orchestration_agent_entity.py # Workflow state
+│   ├── services/                 # Operation providers (business logic)
+│   │   ├── base_service.py
+│   │   ├── generator_agent_service.py   # Email generation
+│   │   ├── detector_agent_service.py    # Threat detection
+│   │   └── orchestration_agent_service.py # Workflow coordination
+│   ├── utils/                    # Utilities
+│   │   ├── api_utils.py          # API tracking, cost calculation
+│   │   └── db_utils.py           # Database integration
+│   ├── main.py                   # Entry point (multi-round orchestration)
+│   ├── ARCHITECTURE.md           # Detailed architecture documentation
+│   └── .env.example              # Environment variable template
+├── backend/                       # ⏳ Flask backend (planned)
+│   ├── app/
+│   │   ├── models/               # SQLAlchemy models
+│   │   ├── routes/               # Flask routes
+│   │   ├── services/             # Business logic
+│   │   ├── tasks/                # Celery tasks
+│   │   └── utils/                # Helper functions
+│   └── requirements.txt
+├── frontend/                      # ⏳ React dashboard (planned)
+├── Documents/                     # 📚 Project documentation
+│   ├── Project_Scope.md
+│   ├── Questions.md
+│   └── Project_Architecture.excalidraw
+└── README.md                      # This file
+```
+
+---
+
+## 🎯 Use Cases
 
 - **Security Training**: Help teams recognize sophisticated scam patterns and social engineering tactics
 - **AI Research**: Study adversarial AI systems and multi-agent competition
@@ -406,24 +500,11 @@ phishing_detection/
 
 ---
 
-## 📚 Documentation
+### Development Phases
 
-- [Project Scope](Documents/Project_Scope.md) - Comprehensive specification and requirements
-- [Questions & Decisions](Documents/Questions.md) - Detailed scoping questionnaire with answers
-- [Architecture Diagram](Documents/Project_Architecture.excalidraw) - System architecture visualization
-- [LLMs Implementation](LLMs/README.md) - Multi-agent system document
-│   │   ├── tasks/                # Celery tasks
-│   │   └── utils/                # Helper functions
-│   └── requirements.txt
-├── frontend/                      # ⏳ React dashboard (planned)
-├── Documents/                     # 📚 Project documentation
-│   ├── Project_Scope.md
-│   ├── Questions.md
-│   └── Project_Architecture.excalidraw
-└── README.md                      # This file
-```
+| **Phase** | **Timeline** | **Status** | **Key Deliverables** |
 |-------|----------|--------|------------------|
-| **Phase 1**: Foundation | Weeks 1-4 | 🔄 In Progress | Offline competition system, database setup |
+| **Phase 1**: Foundation | Weeks 1-4 | 🔄 In Progress | ✅ Multi-agent system, database setup |
 | **Phase 2**: Dashboard | Weeks 5-8 | ⏳ Planned | Real-time monitoring, WebSocket integration |
 | **Phase 3**: User API | Weeks 9-12 | ⏳ Planned | Email scanning endpoint, caching, rate limiting |
 | **Phase 4**: Extension | Weeks 13-16 | ⏳ Planned | Chrome extension, Gmail integration |
@@ -476,10 +557,11 @@ This system is for **educational and research purposes only**. Do not use genera
 ## 🙏 Acknowledgments
 
 - **OpenPhish & PhishTank**: Public phishing datasets
-- **OpenAI**: GPT-4o for generation and orchestration
+- **OpenAI**: GPT-4o-mini for generation and orchestration
 - **Anthropic**: Claude Sonnet 4.5 for advanced detection
 - **Google**: Gemini 2.5 Flash for evaluation
 - **Microsoft**: Semantic Kernel framework
+- **Flask Community**: Excellent web framework documentation
 
 ### Data Protection
 - All sensitive data encrypted at rest and in transit
@@ -523,16 +605,7 @@ To be determined upon project completion.
 
 ---
 
-## 🙏 Acknowledgments
-
-- **OpenPhish & PhishTank**: Public phishing datasets
-- **Google Gemini**: Frontier AI model access
-- **Flask Community**: Excellent web framework documentation
-- **Academic Supervisor**: Le Hoang Nhat Duy
-
----
-
-## 📞 Contact
+##  Contact
 
 For questions or collaboration inquiries:
 - **Email**: [Contact through repository issues]
