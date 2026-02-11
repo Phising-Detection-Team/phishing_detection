@@ -18,7 +18,7 @@ class API(db.Model):
     email_test_id = db.Column(
         db.Integer,
         db.ForeignKey('Emails.id', ondelete='CASCADE'),
-        nullable=False,
+        nullable=True,
         index=True                      
     )
 
@@ -26,7 +26,7 @@ class API(db.Model):
     agent_type = db.Column(db.String(20))
 
     # Model Name
-    model_name = db.Column(db.String(20))
+    model_name = db.Column(db.String(50))
 
     # Token used
     token_used = db.Column(db.Integer)
