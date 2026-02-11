@@ -46,7 +46,15 @@ This system addresses the growing sophistication of phishing attacks by using AI
 
 ### Multi-Agent System (LLMs Directory)
 
-A sophisticated multi-agent AI system using **Semantic Kernel orchestration** with AI-powered function calling where two specialized agents compete in an adversarial competition.
+A sophisticated multi-agent AI system using **Semantic Kernel orchestration** with AI-powered function calling where specialized agents compete in an adversarial competition.
+
+#### 🏗️ Architecture
+
+**Entity-Service Pattern with Optional Binding**
+- **Entities**: Independent state holders (API keys, clients, configuration)
+- **Services**: Flexible operation providers supporting dual-mode usage
+- **Optional Binding**: Services can be bound to entities (for Semantic Kernel) or stateless (with entity parameter)
+- **No Adapter Layer**: Services register directly with Semantic Kernel
 
 #### 🎭 Agents
 
@@ -67,6 +75,14 @@ A sophisticated multi-agent AI system using **Semantic Kernel orchestration** wi
   - **Layer 3**: Psychological Analysis (emotional manipulation, social engineering)
   - **Layer 4**: Technical Analysis (links, attachments, anomalies)
 - **Scoring**: Accuracy (0-25), analytical depth (0-25), indicator identification (0-25), reasoning quality (0-25)
+
+**3. Orchestration Agent (OpenAI GPT-4o)**
+- **Goal**: AI-powered workflow management using function calling
+- **Strategy**: Automatically plans and executes the workflow
+- **Capabilities**:
+  - Intelligent agent coordination
+  - Multi-round processing with status tracking
+  - Cost calculation and performance metrics
 
 #### Quick Start (LLMs Implementation)
 
