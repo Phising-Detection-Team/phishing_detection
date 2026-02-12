@@ -10,6 +10,7 @@ Helps with:
 
 from datetime import datetime
 from . import db
+from sqlalchemy.orm import validates
 
 class Log(db.Model):
     """ 
@@ -19,6 +20,10 @@ class Log(db.Model):
     """
 
     __tablename__ = "Logs"
+
+    __table_args__ = (
+        db.CheckConstraint("level IN ('info','warning','error','critical')", name='ck_log_level_enum'),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
 
@@ -34,7 +39,7 @@ class Log(db.Model):
     level = db.Column(
         db.String(20),
         nullable=False,
-        index=True
+        index=False
     )
 
     # Log message
@@ -93,3 +98,18 @@ class Log(db.Model):
         db.session.add(log)
         db.session.commit()
         return log
+
+    @validates('level')
+    def validate_level(self, key, value):
+        if value is None:
+            raise ValueError('level is required')
+        allowed = {'info', 'warning', 'error', 'critical'}
+        if value not in allowed:
+            raise ValueError(f'level must be one of {allowed}')
+        return value
+
+    @validates('message')
+    def validate_message(self, key, value):
+        if not value:
+            raise ValueError('message cannot be empty')
+        return value
