@@ -9,13 +9,13 @@ class API(db.Model):
     __tablename__ ='API_calls'
 
     # Primary Key
-    id = db.Column(
+    email_id = db.Column(
         db.Integer,
         primary_key=True
     )
 
     # Foreign Key
-    email_id = db.Column(
+    round_id = db.Column(
         db.Integer,
         db.ForeignKey('Emails.id', ondelete='CASCADE'),
         nullable=False,
@@ -52,8 +52,8 @@ class API(db.Model):
     def to_dict(self):
         """Converting to dictionary for JSON responses"""
         return {
-            'id': self.id,
-            'email_id': self.email_id,
+            'id': self.email_id,
+            'round_id': self.round_id,
             'agent_type': self.agent_type,
             'model_name': self.model_name,
             'token_used': self.token_used,

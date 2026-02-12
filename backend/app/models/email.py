@@ -87,7 +87,6 @@ class Email(db.Model):
     )
 
     # Detector's confidence (0.0 to 1.0) -> Higher = more confident
-    # !!! DO WE WANT TO KEEP THIS !!!
     detector_confidence = db.Column(
         db.Float,
         nullable=True
@@ -106,6 +105,7 @@ class Email(db.Model):
         nullable=True
     )
 
+    """
     # JUDGE OUTPUTS
 
     # Judge ground truth (minimum truth?)
@@ -145,6 +145,7 @@ class Email(db.Model):
         db.Integer,
         nullable=True
     )
+    """
 
     # MANUALLY OVERRIDE
     # Was this overridden by human?
@@ -185,14 +186,14 @@ class Email(db.Model):
     )
 
     # Processing time (seconds)
-    # How long did it take to generate, detect, and judge?
+    # How long did it take to generate, detect?
     processing_time = db.Column(
         db.Float,
         nullable=True
     )
 
     # API cost for this email (USD)
-    # Sum generator + detector + judge
+    # Sum generator + detector
     cost = db.Column(
         db.Float,
         default=0.0
