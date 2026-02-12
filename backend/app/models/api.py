@@ -4,9 +4,17 @@
 
 from datetime import datetime
 from . import db
+from sqlalchemy.orm import validates
 
 class API(db.Model):
     __tablename__ ='API_calls'
+
+    __table_args__ = (
+        db.CheckConstraint("agent_type IN ('generator','detector','judge')", name='ck_api_agent_type_enum'),
+        db.CheckConstraint('token_used IS NULL OR token_used >= 0', name='ck_api_token_used_nonneg'),
+        db.CheckConstraint('cost IS NULL OR cost >= 0', name='ck_api_cost_nonneg'),
+        db.CheckConstraint('latency_ms IS NULL OR latency_ms >= 0', name='ck_api_latency_nonneg'),
+    )
 
     # Primary Key
     email_id = db.Column(
@@ -61,3 +69,36 @@ class API(db.Model):
             'latency_ms': self.latency_ms,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+    @validates('agent_type')
+    def validate_agent_type(self, key, value):
+        if value is None:
+            raise ValueError('agent_type is required')
+        allowed = {'generator', 'detector', 'judge'}
+        if value not in allowed:
+            raise ValueError(f'agent_type must be one of {allowed}')
+        return value
+
+    @validates('token_used', 'latency_ms')
+    def validate_non_negative_ints(self, key, value):
+        if value is None:
+            return None
+        try:
+            v = int(value)
+        except (TypeError, ValueError):
+            raise ValueError(f'{key} must be an integer')
+        if v < 0:
+            raise ValueError(f'{key} must be non-negative')
+        return v
+
+    @validates('cost')
+    def validate_cost(self, key, value):
+        if value is None:
+                return None
+        try:
+            v = float(value)
+        except (TypeError, ValueError):
+            raise ValueError('cost must be a number')
+        if v < 0:
+            raise ValueError('cost must be non-negative')
+        return v
