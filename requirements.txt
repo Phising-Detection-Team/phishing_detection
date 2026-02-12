@@ -13,3 +13,7 @@ anthropic>=0.18.0
 google.genai==1.39.0
 # Environment variables
 python-dotenv>=1.2.1
+# Async support (included with other packages, but explicit for clarity)
+aiohttp>=3.9.0
+# Calculate LLM cost
+tokencost>=0.1.26

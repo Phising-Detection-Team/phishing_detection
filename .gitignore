@@ -4,3 +4,5 @@ backend/app.db
 **/__pycache__/
 **/*.pyc
 **/*.pyo
+LLM.log
+**/*.pyo
