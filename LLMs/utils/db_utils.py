@@ -6,7 +6,7 @@ Provides database connection and logging functionality for API calls.
 
 import os
 from flask import Flask
-# from backend.app.models import db, API
+from backend.app.models import db, API
 from sqlalchemy.orm import scoped_session
 
 
