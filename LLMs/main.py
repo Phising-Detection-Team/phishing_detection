@@ -1,6 +1,8 @@
 import sys
 import asyncio
 import os
+import json
+import logging
 import semantic_kernel as sk
 from datetime import datetime, UTC
 from dotenv import load_dotenv
@@ -18,6 +20,38 @@ load_dotenv()
 # Constants
 OPENAI_MODEL = "gpt-4o-mini"
 DEFAULT_MAX_ROUNDS = 10
+
+def setup_logging():
+    """Set up logging to file and console."""
+    log_file = "LLM.log"
+    
+    # Create logger
+    logger = logging.getLogger("LLM_Orchestration")
+    logger.setLevel(logging.DEBUG)
+    
+    # Remove existing handlers to avoid duplicates
+    logger.handlers = []
+    
+    # File handler
+    file_handler = logging.FileHandler(log_file, mode='a')
+    file_handler.setLevel(logging.DEBUG)
+    
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    
+    # Formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+    
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    return logger
 
 def create_minimal_app():
     """Create a minimal Flask app context for DB access."""
@@ -79,6 +113,12 @@ def register_agents(kernel: sk.Kernel) -> None:
 
 async def main():
     """Main orchestration function for multi-round email generation."""
+    # Initialize logging
+    logger = setup_logging()
+    logger.info("=" * 60)
+    logger.info("Starting LLM Orchestration Session")
+    logger.info("=" * 60)
+    
     # Initialize database connection
     # init_db()
 
@@ -107,6 +147,8 @@ async def main():
     except ValueError:
         print("Invalid input. Using default value of 1.")
         emails_per_round = 1
+
+    logger.info(f"Configuration: {num_rounds} rounds, {emails_per_round} emails per round")
 
     print("\n" + "="*60)
     print(f"🚀 STARTING AI-POWERED MULTI-ROUND ORCHESTRATION SCAM EMAIL GENERATION")
@@ -145,6 +187,7 @@ async def main():
         # Generate emails for this round
         for email_num in range(1, emails_per_round + 1):
             print(f"   Generating email {email_num}/{emails_per_round}...")
+            logger.info(f"[Round {round_num}] Generating email {email_num}/{emails_per_round}...")
 
             # Use orchestration agent to generate and analyze in one call
             result = await orchestration_service["ai_orchestrate"].invoke(
@@ -154,6 +197,10 @@ async def main():
 
             # The orchestration agent returns properly formatted JSON
             email_result = result.value
+
+            # Log the LLM response
+            logger.debug(f"[Round {round_num}, Email {email_num}] Raw LLM Response:")
+            logger.debug(json.dumps(email_result, indent=2, default=str))
 
             # Extract agent statuses from the result (they're at the top level)
             generator_status = email_result.get('generator_agent_status', 0)
@@ -167,6 +214,7 @@ async def main():
             print(f"   ✓ Email {email_num} generated and analyzed")
             print(f"      Generator status: {'✓' if generator_status == 1 else '✗'}")
             print(f"      Detector status: {'✓' if detector_status == 1 else '✗'}\n")
+            logger.info(f"[Round {round_num}, Email {email_num}] Completed - Generator: {generator_status}, Detector: {detector_status}")
 
         # Store results for this round
         round_result = {
@@ -198,6 +246,8 @@ async def main():
         print(f"   Detector successes: {detector_successes}/{len(round_emails)}")
         print(f"   Processing time: {processing_time}s")
         print(f"   Total cost: ${total_round_cost:.7f}")
+        
+        logger.info(f"[Round {round_num}] Summary: {len(round_emails)} emails, Generator: {generator_successes}/{len(round_emails)}, Detector: {detector_successes}/{len(round_emails)}, Time: {processing_time}s, Cost: ${total_round_cost:.7f}")
 
     # Final summary
     print("\n" + "="*60)
@@ -207,6 +257,11 @@ async def main():
     print(f"   Total rounds: {num_rounds}")
     print(f"   Emails per round: {emails_per_round}")
     print(f"   Total emails generated: {num_rounds * emails_per_round}")
+    
+    logger.info("=" * 60)
+    logger.info("AI ORCHESTRATION SESSION COMPLETE")
+    logger.info(f"Total rounds: {num_rounds}, Emails per round: {emails_per_round}, Total emails: {num_rounds * emails_per_round}")
+    logger.info("=" * 60)
 
     # Return all results
     final_result = {
