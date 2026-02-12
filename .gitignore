@@ -5,3 +5,4 @@ backend/app.db
 **/*.pyc
 **/*.pyo
 LLM.log
+**/*.pyo
