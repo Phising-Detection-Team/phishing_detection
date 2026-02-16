@@ -13,7 +13,7 @@ from . import db
 from sqlalchemy.orm import validates
 
 class Log(db.Model):
-    """ 
+    """
     Model representing a system log entry
 
     Stores events, errors, and important state changes
@@ -72,7 +72,7 @@ class Log(db.Model):
     def __repr__(self):
         """String representing for debugging"""
         return f'<Log {self.id} [{self.level}] {self.message[:30]}...>'
-    
+
     def to_dict(self):
         """Converting to dictionary for JSON responses"""
         return {
@@ -83,13 +83,13 @@ class Log(db.Model):
             'context': self.context,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None
         }
-    
+
     @staticmethod
     def create_log(level, message, round_id=None, context=None):
         """Helper method to create and save a log entry"""
 
         log = Log()
-        
+
         log.level = level
         log.message = message
         log.context = context

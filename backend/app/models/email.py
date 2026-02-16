@@ -329,4 +329,3 @@ class Email(db.Model):
             self.is_phishing and 
             self.detector_verdict == "legitimate"
         )
-

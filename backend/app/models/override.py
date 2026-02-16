@@ -1,4 +1,4 @@
-"""  
+"""
     Model representing human mannually override the results
 """
 
@@ -54,7 +54,7 @@ class Override(db.Model):
         """String representing for debugging"""
         # !!! NEEDED TO DESIGN OUTPUT !!!
         return f''
-    
+
     def to_dict(self):
         """Converting to dictionary for JSON responses"""
         return {

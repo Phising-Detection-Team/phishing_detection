@@ -1,7 +1,7 @@
 """
 Model representing a competition round.
 
-Each round consists off generating N emails, detecting them, 
+Each round consists off generating N emails, detecting them,
 judging the detector's accuracy.
 """
 
@@ -92,13 +92,13 @@ class Round(db.Model):
         default=0.0
     )
 
-    # ... 
+    # ...
     created_by = db.Column(
         db.String(100),
         nullable=True
     )
 
-    # ... 
+    # ...
     notes = db.Column(
         db.Text,
         nullable=True
@@ -130,14 +130,14 @@ class Round(db.Model):
         String representation of the object (for debugging)
         """
         return f'<Round {self.id} ({self.status})>'
-    
+
     def to_dict(self):
         """
         Convert model to dictionary (for JSON responses)
 
         Returns:
             dict: Dictionary representation of the round
-        
+
         Example:
             >>> round = Round.query.get(1)
             >>> round.to_dict()
@@ -164,10 +164,10 @@ class Round(db.Model):
             'notes': self.notes,
             'total_cost': self.total_cost
         }
-    
+
     def calculate_accuracy(self):
         """
-        Calculate detector accuracy for this round. 
+        Calculate detector accuracy for this round.
 
         Returns:
             float: Accuracy percentage (0-100)
@@ -177,7 +177,7 @@ class Round(db.Model):
 
         if not emails:
             return 0.0
-        
+
         # Count correct detections
         correct = sum(
             1 for email in emails
