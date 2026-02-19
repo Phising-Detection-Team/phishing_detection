@@ -7,20 +7,20 @@ from . import db
 from sqlalchemy.orm import validates
 
 class Override(db.Model):
-    __tablename__ = 'Overrides'
+    __tablename__ = 'manual_overrides'
 
     __table_args__ = (
         db.CheckConstraint("verdict IN ('correct','incorrect','phishing','legitimate')", name='ck_override_verdict_enum'),
-        db.UniqueConstraint('email_test_id', name='uq_override_email_test_id'),
+        db.UniqueConstraint('email_id', name='uq_override_email_id'),
     )
 
     # Primary Key
     id = db.Column(db.Integer, primary_key=True)
 
     # Foreign Key
-    email_test_id = db.Column(
+    email_id = db.Column(
         db.Integer,
-        db.ForeignKey('Emails.id', ondelete='CASCADE'),
+        db.ForeignKey('emails.id', ondelete='CASCADE'),
         nullable=False,
         index=True
     )
@@ -59,7 +59,7 @@ class Override(db.Model):
         """Converting to dictionary for JSON responses"""
         return {
             'id': self.id,
-            'email_test_id': self.email_test_id,
+            'email_id': self.email_id,
             'verdict': self.verdict,
             'overridden_by': self.overridden_by,
             'reason': self.reason,
@@ -75,12 +75,12 @@ class Override(db.Model):
             raise ValueError(f'verdict must be one of {allowed}')
         return value
 
-    @validates('email_test_id')
-    def validate_email_test_id(self, key, value):
+    @validates('email_id')
+    def validate_email_id(self, key, value):
         try:
             v = int(value)
         except (TypeError, ValueError):
-            raise ValueError('email_test_id must be an integer')
+            raise ValueError('email_id must be an integer')
         if v <= 0:
-            raise ValueError('email_test_id must be positive')
+            raise ValueError('email_id must be positive')
         return v

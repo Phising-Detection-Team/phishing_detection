@@ -3,8 +3,8 @@ Flask application factory and database initialization.
 """
 
 from flask import Flask
-from app.config import get_config
-from app.models import db
+from .config import get_config
+from .models import db
 
 
 def create_app(config_env=None):

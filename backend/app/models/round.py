@@ -10,7 +10,7 @@ from . import db
 from sqlalchemy.orm import validates
 
 class Round(db.Model):
-    __tablename__ = 'Rounds'
+    __tablename__ = 'rounds'
 
     __table_args__ = (
         db.CheckConstraint('total_emails > 0', name='ck_round_total_emails_positive'),

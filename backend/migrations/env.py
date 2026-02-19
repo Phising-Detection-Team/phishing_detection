@@ -1,24 +1,35 @@
 from logging.config import fileConfig
+import os
+import sys
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
 
+# Add parent directory to path to import app modules
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-if config.config_file_name is not None:
+# Use DATABASE_URL from environment if available, otherwise use alembic.ini
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    config.set_main_option("sqlalchemy.url", database_url)
     fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
+# Import all models to ensure they're registered with SQLAlchemy
 from app.models import db
+from app.models.email import Email
+from app.models.round import Round
+from app.models.log import Log
+from app.models.api import API
+from app.models.human_override import Override
+
 target_metadata = db.Model.metadata
 
 # other values from the config, defined by the needs of env.py,

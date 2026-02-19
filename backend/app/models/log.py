@@ -19,7 +19,7 @@ class Log(db.Model):
     Stores events, errors, and important state changes
     """
 
-    __tablename__ = "Logs"
+    __tablename__ = 'logs'
 
     __table_args__ = (
         db.CheckConstraint("level IN ('info','warning','error','critical')", name='ck_log_level_enum'),
@@ -29,7 +29,7 @@ class Log(db.Model):
 
     round_id = db.Column(
         db.Integer,
-        db.ForeignKey('Rounds.id', ondelete='CASCADE'),
+        db.ForeignKey('rounds.id', ondelete='CASCADE'),
         nullable=True,      # If NULL, this is a system-level log
         index=True          # Index for faster filtering
     )
