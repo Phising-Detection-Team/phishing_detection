@@ -1,13 +1,16 @@
 **Alembic**
-1. Autogenerate
+1. Initiate Migration:
+alembic init migration
+
+2. Autogenerate
 alembic revision --autogenerate -m "add users table"
 
-2. Upgrade / Downgrade
+3. Upgrade / Downgrade
 alembic upgrade head
 alembic downgrade -1
 
-3. Apply migration
+4. Apply migration
 alembic upgrade head
 
-4. Initialize migration
+5. Initialize migration
 alembic upgrade head
