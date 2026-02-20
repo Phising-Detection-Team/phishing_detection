@@ -15,4 +15,8 @@ class Config:
 
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
+    # Semantic Kernel / OpenAI
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+    OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
+
     DEBUG = os.getenv('FLASK_DEBUG', 'True').lower() in ('true', '1', 'yes')
