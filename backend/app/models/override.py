@@ -4,9 +4,15 @@
 
 from datetime import datetime
 from . import db
+from sqlalchemy.orm import validates
 
 class Override(db.Model):
-    __tablename__ = 'Manual_Overrides'
+    __tablename__ = 'Overrides'
+
+    __table_args__ = (
+        db.CheckConstraint("verdict IN ('correct','incorrect','phishing','legitimate')", name='ck_override_verdict_enum'),
+        db.UniqueConstraint('email_test_id', name='uq_override_email_test_id'),
+    )
 
     # Primary Key
     id = db.Column(db.Integer, primary_key=True)
@@ -59,3 +65,22 @@ class Override(db.Model):
             'reason': self.reason,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+    @validates('verdict')
+    def validate_verdict(self, key, value):
+        if value is None:
+            raise ValueError('verdict is required')
+        allowed = {'correct', 'incorrect', 'phishing', 'legitimate'}
+        if value not in allowed:
+            raise ValueError(f'verdict must be one of {allowed}')
+        return value
+
+    @validates('email_test_id')
+    def validate_email_test_id(self, key, value):
+        try:
+            v = int(value)
+        except (TypeError, ValueError):
+            raise ValueError('email_test_id must be an integer')
+        if v <= 0:
+            raise ValueError('email_test_id must be positive')
+        return v

@@ -55,7 +55,10 @@ class GeneratorAgentService(BaseService):
                 "romance scam",
                 "cryptocurrency investment scam",
                 "fake package delivery notification",
-                "IRS tax scam"
+                "IRS tax scam",
+                "Gift Card award scam",
+                "Business email compromise",
+                "advance fee scam",
             ]
             scenario = random.choice(scam_types)
 
