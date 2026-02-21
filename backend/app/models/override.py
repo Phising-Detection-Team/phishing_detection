@@ -7,7 +7,7 @@ from . import db
 from sqlalchemy.orm import validates
 
 class Override(db.Model):
-    __tablename__ = 'manual_overrides'
+    __tablename__ = 'overrides'
 
     __table_args__ = (
         db.CheckConstraint("verdict IN ('correct','incorrect','phishing','legitimate')", name='ck_override_verdict_enum'),
