@@ -71,7 +71,7 @@ async def track_api_call(
     Returns:
         dict: Standardized result with status, timing, cost, tokens, and response
     """
-    from .db_utils import log_api_call
+    from .db_utils import save_api_call
 
     try:
         # Time the API call
@@ -93,16 +93,16 @@ async def track_api_call(
         total_api_cost = prompt_cost + completion_cost
 
         # Log to database if round_id provided
-        # if round_id is not None:
-        #     log_api_call(
-        #         round_id=round_id,
-        #         agent_type=agent_type,
-        #         model_name=model_name,
-        #         token_used=token_usage["total_tokens"],
-        #         cost=total_api_cost,
-        #         latency_ms=latency_ms,
-        #         email_id=None
-        #     )
+        if round_id is not None:
+            save_api_call(
+                round_id=round_id,
+                agent_type=agent_type,
+                model_name=model_name,
+                token_used=token_usage["total_tokens"],
+                cost=total_api_cost,
+                latency_ms=latency_ms,
+                email_id=None
+            )
 
         return {
             "status": 1,

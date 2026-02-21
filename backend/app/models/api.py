@@ -7,7 +7,7 @@ from . import db
 from sqlalchemy.orm import validates
 
 class API(db.Model):
-    __tablename__ ='API_calls'
+    __tablename__ = 'api_calls'
 
     __table_args__ = (
         db.CheckConstraint("agent_type IN ('generator','detector','judge')", name='ck_api_agent_type_enum'),
@@ -17,7 +17,7 @@ class API(db.Model):
     )
 
     # Primary Key
-    email_id = db.Column(
+    id = db.Column(
         db.Integer,
         primary_key=True
     )
@@ -25,16 +25,22 @@ class API(db.Model):
     # Foreign Key
     round_id = db.Column(
         db.Integer,
-        db.ForeignKey('Emails.id', ondelete='CASCADE'),
+        db.ForeignKey('rounds.id', ondelete='CASCADE'),
         nullable=False,
-        index=True                      
+        index=True
+    )
+
+    # Email ID (general column, not a foreign key)
+    email_id = db.Column(
+        db.Integer,
+        nullable=True
     )
 
     # Agent type (generator, detector, judge)
     agent_type = db.Column(db.String(20))
 
     # Model Name
-    model_name = db.Column(db.String(20))
+    model_name = db.Column(db.String(50))
 
     # Token used
     token_used = db.Column(db.Integer)
@@ -56,12 +62,13 @@ class API(db.Model):
         """String representing for debugging"""
         # !!! NEEDED TO DESIGN OUTPUT !!!
         return f''
-    
+
     def to_dict(self):
         """Converting to dictionary for JSON responses"""
         return {
-            'id': self.email_id,
+            'id': self.id,
             'round_id': self.round_id,
+            'email_id': self.email_id,
             'agent_type': self.agent_type,
             'model_name': self.model_name,
             'token_used': self.token_used,

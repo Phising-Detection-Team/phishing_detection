@@ -13,7 +13,7 @@ class Email(db.Model):
     4. Optional: Human can override judge verdict
     """
 
-    __tablename__ = 'Emails'
+    __tablename__ = 'emails'
     __table_args__ = (
         db.CheckConstraint('detector_confidence >= 0 AND detector_confidence <= 1', name='ck_email_detector_confidence_range'),
         db.CheckConstraint('generator_latency_ms IS NULL OR generator_latency_ms >= 0', name='ck_email_generator_latency_nonneg'),
@@ -29,7 +29,7 @@ class Email(db.Model):
     # FOREIGN KEY
     round_id = db.Column(
         db.Integer,
-        db.ForeignKey('Rounds.id', ondelete='CASCADE'),
+        db.ForeignKey('rounds.id', ondelete='CASCADE'),
         nullable=False,
         index=True          # Faster look up
     )
@@ -60,7 +60,7 @@ class Email(db.Model):
     # Set by generator, used by judge for evaluation
     is_phishing = db.Column(
         db.Boolean,
-        nullable=False    
+        nullable=False
     )
 
     # Stored as JSON for flexibility
@@ -214,7 +214,7 @@ class Email(db.Model):
     def __repr__(self):
         """String representation for debugging"""
         return f"<Email {self.id} (Round {self.round_id})>"
-    
+
     def to_dict(self):
         """Convert to dictionary for JSON responses"""
         return {
@@ -240,7 +240,7 @@ class Email(db.Model):
             'processing_time': self.processing_time,
             'cost': self.cost
         }
-    
+
     def get_final_verdict(self):
         """
         Get the final verdict (considering manual overrides)
@@ -251,7 +251,7 @@ class Email(db.Model):
 
         if self.manual_override:
             return self.override_verdict
-        
+
         if self.detector_verdict:
             return self.detector_verdict
 
@@ -306,7 +306,7 @@ class Email(db.Model):
         if not isinstance(value, bool):
             raise ValueError('is_phishing must be a boolean')
         return value
-    
+
     def is_false_positive(self):
         """
         Check if this is a false positive (Says it phishing but it is legitimate)
@@ -316,17 +316,16 @@ class Email(db.Model):
         """
 
         return (
-            not self.is_phishing and 
+            not self.is_phishing and
             self.detector_verdict == "phishing"
         )
-    
+
     def is_false_negative(self):
         """
         Check if this is a false negative
         """
-        
+
         return (
-            self.is_phishing and 
+            self.is_phishing and
             self.detector_verdict == "legitimate"
         )
-
