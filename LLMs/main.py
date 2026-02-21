@@ -3,26 +3,30 @@ import asyncio
 import os
 import json
 import logging
+from dotenv import load_dotenv
+
+# Load environment variables from root .env file FIRST before anything else
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+env_file = os.path.join(project_root, '.env')
+if os.path.exists(env_file):
+    load_dotenv(env_file)
+else:
+    print(f"⚠️  Warning: .env file not found at {env_file}")
 
 # Add project root to sys.path for backend imports
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 import semantic_kernel as sk
 from datetime import datetime, UTC
-from dotenv import load_dotenv
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from backend.app.models import db
-from .utils.db_utils import init_db, save_email, create_round, update_round
+from utils.db_utils import init_db, save_email, create_round, update_round
 
 # Import services (self-contained with their own entities)
-from .services.orchestration_agent_service import OrchestrationAgentService
-from .services.generator_agent_service import GeneratorAgentService
-from .services.detector_agent_service import DetectorAgentService
-
-# Load environment variables from .env file
-load_dotenv()
+from services.orchestration_agent_service import OrchestrationAgentService
+from services.generator_agent_service import GeneratorAgentService
+from services.detector_agent_service import DetectorAgentService
 
 # Constants
 OPENAI_MODEL = "gpt-4o-mini"

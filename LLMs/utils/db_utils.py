@@ -4,52 +4,55 @@ Database utilities for LLM services.
 Provides database connection and logging functionality for API calls.
 """
 
+# MUST load environment variables FIRST, before importing anything from backend
 import os
-from flask import Flask
+import sys
+from dotenv import load_dotenv
+
+# Load environment variables from root .env file BEFORE importing backend modules
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+env_file = os.path.join(project_root, '.env')
+if os.path.exists(env_file):
+    load_dotenv(env_file)
+else:
+    print(f"⚠️  Warning: .env file not found at {env_file}")
+
+# NOW import backend modules after environment is configured
+from backend.app import create_app
 from backend.app.models import db, API, Email, Round
 from sqlalchemy.orm import scoped_session
 from datetime import datetime
 
-
-# Global Flask app and session instances
+# Global Flask app instance and context
 _app = None
-_db_session = None
+_app_context = None
 
 
 def init_db() -> None:
     """Initialize Flask app and database connection.
 
     This should be called once at application startup.
-    Reads DATABASE_URL from environment variables.
+    Uses the backend's create_app() to properly initialize everything.
     """
-    global _app, _db_session
+    global _app, _app_context
 
     if _app is not None:
         return  # Already initialized
 
-    # Get database URL from environment
+    # Ensure backend is in sys.path for imports
+    backend_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'backend')
+    if backend_path not in sys.path:
+        sys.path.insert(0, backend_path)
+    
+    # Use backend's create_app() which properly loads config and initializes db
+    _app = create_app(config_env='development')
+    
+    # Push app context and keep it active for the lifetime of the script
+    _app_context = _app.app_context()
+    _app_context.push()
+    
     database_url = os.getenv('PROD_DATABASE_URL') or os.getenv('DEV_DATABASE_URL')
-    if not database_url:
-        print("⚠️  Warning: DEV_DATABASE_URL OR PROD_DATABASE_URL not set. Database logging will fail.")
-        print("   Set it in your .env file:")
-        print("   DEV_DATABASE_URL=sqlite:///app.db")
-        return
-
-    # Create minimal Flask app for database access
-    _app = Flask(__name__)
-    _app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-    _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    _app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        'pool_pre_ping': True,  # Verify connections before using
-        'pool_recycle': 300,    # Recycle connections after 5 minutes
-    }
-
-    # Initialize SQLAlchemy with the app
-    db.init_app(_app)
-
-    # Create application context
-    _app.app_context().push()
-
+    print(f"📦 Connecting to database: {database_url.split('@')[1] if '@' in database_url else '...'}")
     print(f"✅ Database connection initialized")
 
 
