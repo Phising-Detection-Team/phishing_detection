@@ -60,10 +60,18 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
-    """Testing configuration."""
-    
+    """Testing configuration.
+
+    Uses in-memory SQLite by default for fast local testing.
+    Can use PostgreSQL if DATABASE_URL environment variable is set (for CI/CD).
+    """
+
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    # Use PostgreSQL if DATABASE_URL is set (for CI), otherwise use SQLite in-memory
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL',
+        'sqlite:///:memory:'
+    )
     WTF_CSRF_ENABLED = False
     SERVER_NAME = os.environ.get('TEST_SERVER_NAME', 'localhost')
 

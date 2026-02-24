@@ -19,7 +19,7 @@ else:
 
 # NOW import backend modules after environment is configured
 from backend.app import create_app
-from backend.app.models import db, API, Email, Round
+from backend.app.models import db, API, Email, Round, Log
 from sqlalchemy.orm import scoped_session
 from datetime import datetime
 
@@ -63,6 +63,34 @@ def get_db():
         SQLAlchemy database instance
     """
     return db
+
+
+def save_log(
+    level: str,
+    message: str,
+    round_id: int = None,
+    context: dict = None
+) -> bool:
+    """Persist a log entry to the database logs table.
+
+    Args:
+        level: Log level (info, warning, error, critical)
+        message: Log message
+        round_id: Optional round ID to associate with the log
+        context: Optional context dictionary for additional metadata
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    if _app is None:
+        return False
+
+    try:
+        Log.create_log(level=level, message=message, round_id=round_id, context=context)
+        return True
+    except Exception:
+        # Never raise from a logging call to avoid cascading failures
+        return False
 
 
 def save_api_call(
@@ -118,7 +146,9 @@ def save_api_call(
         return True
 
     except Exception as e:
-        print(f"❌ Failed to log API call to database: {e}")
+        msg = f"Failed to log API call to database: {e}"
+        print(f"❌ {msg}")
+        save_log('error', msg, round_id=round_id)
         db.session.rollback()
         return False
 
@@ -217,7 +247,9 @@ def save_email(
         return email_record.id
 
     except Exception as e:
-        print(f"❌ Failed to save email to database: {e}")
+        msg = f"Failed to save email to database: {e}"
+        print(f"❌ {msg}")
+        save_log('error', msg, round_id=round_id)
         db.session.rollback()
         return None
 
@@ -261,7 +293,9 @@ def create_round(
         return round_record.id
 
     except Exception as e:
-        print(f"❌ Failed to create round in database: {e}")
+        msg = f"Failed to create round in database: {e}"
+        print(f"❌ {msg}")
+        save_log('error', msg)
         db.session.rollback()
         return None
 
@@ -329,6 +363,8 @@ def update_round(
         return True
 
     except Exception as e:
-        print(f"❌ Failed to update round in database: {e}")
+        msg = f"Failed to update round in database: {e}"
+        print(f"❌ {msg}")
+        save_log('error', msg, round_id=round_id)
         db.session.rollback()
         return False

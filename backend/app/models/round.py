@@ -179,9 +179,11 @@ class Round(db.Model):
             return 0.0
 
         # Count correct detections
+        # Since all generated emails are real phishing (is_phishing=True),
+        # correct detection means the detector classified them as 'phishing'
         correct = sum(
             1 for email in emails
-            if email.judge_verdict == 'correct'
+            if email.detector_verdict == 'phishing'
         )
 
         # Calculate percentage

@@ -21,7 +21,7 @@ import semantic_kernel as sk
 from datetime import datetime, UTC
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from backend.app.models import db
-from utils.db_utils import init_db, save_email, create_round, update_round
+from utils.db_utils import init_db, save_email, create_round, update_round, save_log
 
 # Import services (self-contained with their own entities)
 from services.orchestration_agent_service import OrchestrationAgentService
@@ -220,7 +220,9 @@ async def main():
                 email_result['email_id'] = email_id
                 logger.info(f"[Round {round_num}, Email {email_num}] Saved to database with ID: {email_id}")
             else:
-                logger.warning(f"[Round {round_num}, Email {email_num}] Failed to save to database")
+                msg = f"Failed to save email {email_num} to database"
+                logger.warning(f"[Round {round_num}, Email {email_num}] {msg}")
+                save_log('warning', msg, round_id=round_id)
 
             round_emails.append(email_result)
             print(f"   ✓ Email {email_num} generated and analyzed")
