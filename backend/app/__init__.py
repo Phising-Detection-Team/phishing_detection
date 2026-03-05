@@ -10,6 +10,7 @@ from .config import get_config
 from .models import db
 from .errors import register_error_handlers
 from .services.kernel_service import KernelService
+from .services.cache_service import cache
 
 
 migrate = Migrate()
@@ -44,6 +45,8 @@ def create_app(config_env=None):
 
     kernel_service.init_app(app)
 
+    cache.init_app(app)
+
     with app.app_context():
         from app.models.email import Email
         from app.models.round import Round
@@ -65,5 +68,13 @@ def register_blueprints(app):
     Imports are inside the function to avoid circular imports.
     """
     from app.routes import main_bp
+    from app.routes.rounds import rounds_bp
+    from app.routes.emails import emails_bp
+    from app.routes.logs import logs_bp
+    from app.routes.costs import costs_bp
 
     app.register_blueprint(main_bp)
+    app.register_blueprint(rounds_bp, url_prefix='/api')
+    app.register_blueprint(emails_bp, url_prefix='/api')
+    app.register_blueprint(logs_bp, url_prefix='/api')
+    app.register_blueprint(costs_bp, url_prefix='/api')
