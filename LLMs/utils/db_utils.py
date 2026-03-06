@@ -17,6 +17,14 @@ if os.path.exists(env_file):
 else:
     print(f"⚠️  Warning: .env file not found at {env_file}")
 
+# backend/app/__init__.py uses bare `from app.models import db` (absolute imports),
+# so `backend/` must be on sys.path in addition to the project root.
+backend_path = os.path.join(project_root, 'backend')
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+if backend_path not in sys.path:
+    sys.path.insert(0, backend_path)
+
 # NOW import backend modules after environment is configured
 from backend.app import create_app
 from backend.app.models import db, API, Email, Round, Log

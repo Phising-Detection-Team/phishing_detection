@@ -1,0 +1,8 @@
+2026-03-05 21:31:45 - openai_agentic - INFO - ============================================================
+2026-03-05 21:31:45 - openai_agentic - INFO - Starting OpenAI Agents SDK Orchestration Session
+2026-03-05 21:31:45 - openai_agentic - INFO - ============================================================
+2026-03-05 21:31:49 - openai_agentic - INFO - Configuration: 1 rounds, 1 emails per round
+2026-03-05 21:31:49 - openai_agentic - ERROR - [Round 1] Failed to create round in database — skipping
+2026-03-05 21:31:49 - openai_agentic - INFO - ============================================================
+2026-03-05 21:31:49 - openai_agentic - INFO - Session complete — 1 rounds, 1 emails total
+2026-03-05 21:31:49 - openai_agentic - INFO - ============================================================
