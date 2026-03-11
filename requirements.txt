@@ -17,9 +17,9 @@ pytest==9.0.2
 
 # LLMs requirements
 # Semantic Kernel for orchestration with function calling support
-semantic-kernel>=1.18.0
+semantic-kernel
 # OpenAI API (for main orchestration and Generator Agent)
-openai>=1.0.0
+openai
 # Anthropic Claude API (for Detector Agent)
 anthropic>=0.18.0
 # Google Gemini API (for Judge Agent)
