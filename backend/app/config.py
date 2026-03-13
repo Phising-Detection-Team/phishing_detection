@@ -26,7 +26,10 @@ class BaseConfig:
 
     # SQLAlchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL',
+        os.environ.get('DEV_DATABASE_URL', os.environ.get('PROD_DATABASE_URL', 'sqlite:///app.db'))
+    )
     SQLALCHEMY_ECHO = os.environ.get('SQLALCHEMY_ECHO', 'False').lower() == 'true'
 
     # CORS
