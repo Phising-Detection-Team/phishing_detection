@@ -1,29 +1,32 @@
-# Database requirements
+# Core Flask
+Flask>=3.0.0
 Flask-SQLAlchemy==3.1.1
 Flask-Cors==6.0.2
 Flask-Migrate==4.1.0
 Flask-SocketIO==5.6.0
+
+# Database
 alembic==1.18.3
 psycopg2-binary>=2.9.5
+
+# Caching
+redis>=5.0.0
 
 # Environment variable management
 python-dotenv==1.2.1
 
-# Testing requirements
+# Testing
 pytest==9.0.2
 
-# LLMs requirements
-# Semantic Kernel for orchestration with function calling support
+# LLMs - Semantic Kernel for orchestration with function calling support
 semantic-kernel>=1.18.0
-# OpenAI API (for main orchestration and Generator Agent)
+# OpenAI API (for Generator Agent and orchestration)
 openai>=1.0.0
 # Anthropic Claude API (for Detector Agent)
 anthropic>=0.18.0
-# Google Gemini API (for Judge Agent)
+# Google Gemini API (for Judge Agent - not yet implemented)
 google.genai==1.39.0
-# Environment variables
-python-dotenv>=1.2.1
-# Async support (included with other packages, but explicit for clarity)
+# Async support
 aiohttp>=3.9.0
-# Calculate LLM cost
+# LLM cost calculation
 tokencost>=0.1.26
