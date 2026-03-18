@@ -4,7 +4,6 @@ Entrypoint for the phishing detection fine-tuning pipeline.
 Usage:
     python training/main.py                  # full pipeline
     python training/main.py --eval-only      # skip training, evaluate a saved checkpoint
-    python training/main.py --no-wandb       # disable Weights & Biases logging
     python training/main.py --no-push        # skip HuggingFace Hub push
 """
 
@@ -32,11 +31,6 @@ def parse_args() -> argparse.Namespace:
         help="Skip training and run evaluation on the latest checkpoint.",
     )
     parser.add_argument(
-        "--no-wandb",
-        action="store_true",
-        help="Disable Weights & Biases logging.",
-    )
-    parser.add_argument(
         "--no-push",
         action="store_true",
         help="Skip pushing the model to HuggingFace Hub.",
@@ -53,23 +47,16 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    # Apply CLI overrides to config before anything else imports it
-    if args.no_wandb:
-        config.LOG_TO_WANDB = False
-
     print("\n" + "=" * 60)
     print("PHISHING DETECTION — FINE-TUNING PIPELINE")
     print("=" * 60)
     print(f"  Base model:  {config.BASE_MODEL}")
     print(f"  Run name:    {config.RUN_NAME}")
     print(f"  Hub target:  {config.HUB_MODEL_NAME or '(not configured)'}")
-    print(f"  W&B:         {'enabled' if config.LOG_TO_WANDB else 'disabled'}")
     print(f"  Mode:        {'eval-only' if args.eval_only else 'train + eval'}")
 
     # ── Auth ──────────────────────────────────────────────────────────────────
     config.login_huggingface()
-    if config.LOG_TO_WANDB:
-        config.login_wandb()
 
     # ── Data ──────────────────────────────────────────────────────────────────
     enron_raw, phishing_raw = data.load_datasets()

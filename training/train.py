@@ -1,5 +1,5 @@
 """
-Training — Trainer setup, training loop, W&B logging, and Hub push.
+Training — Trainer setup, training loop, and Hub push.
 
 Exports:
     compute_metrics()  -> dict
@@ -9,6 +9,7 @@ Exports:
 """
 
 import numpy as np
+import torch
 import evaluate
 from transformers import (
     AutoTokenizer,
@@ -76,6 +77,8 @@ def build_trainer(
     print("BUILDING TRAINER")
     print("=" * 60)
 
+    use_cuda = torch.cuda.is_available()
+
     training_args = TrainingArguments(
         output_dir=config.OUTPUT_DIR,
         num_train_epochs=config.EPOCHS,
@@ -88,8 +91,8 @@ def build_trainer(
         lr_scheduler_type=config.LR_SCHEDULER_TYPE,
         warmup_ratio=config.WARMUP_RATIO,
         max_grad_norm=config.MAX_GRAD_NORM,
-        fp16=False,
-        bf16=True,
+        fp16=True,
+        bf16=False,
         logging_steps=config.LOGGING_STEPS,
         eval_strategy="steps",
         eval_steps=config.SAVE_STEPS,
@@ -99,12 +102,13 @@ def build_trainer(
         load_best_model_at_end=True,
         metric_for_best_model="f1",
         greater_is_better=True,
-        report_to="wandb" if config.LOG_TO_WANDB else "none",
+        report_to="none",
         run_name=config.RUN_NAME,
         push_to_hub=bool(config.HF_USER),
         hub_model_id=config.HUB_MODEL_NAME if config.HF_USER else None,
         hub_strategy="every_save",
         hub_private_repo=True,
+        dataloader_pin_memory=use_cuda,
     )
 
     trainer = Trainer(
@@ -112,7 +116,6 @@ def build_trainer(
         args=training_args,
         train_dataset=tokenized_datasets["train"],
         eval_dataset=tokenized_datasets["validation"],
-        tokenizer=tokenizer,
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
@@ -133,7 +136,7 @@ def build_trainer(
 
 def run_training(trainer: Trainer) -> Trainer:
     """
-    Optionally initialise W&B, run trainer.train(), then finish W&B run.
+    Run trainer.train().
 
     Args:
         trainer: Configured Trainer instance.
@@ -145,15 +148,7 @@ def run_training(trainer: Trainer) -> Trainer:
     print("TRAINING")
     print("=" * 60)
 
-    if config.LOG_TO_WANDB:
-        import wandb
-        wandb.init(project=config.PROJECT_NAME, name=config.RUN_NAME)
-
     trainer.train()
-
-    if config.LOG_TO_WANDB:
-        import wandb
-        wandb.finish()
 
     print("\nTraining complete.")
     return trainer

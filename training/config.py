@@ -5,7 +5,6 @@ All other training modules import constants from here.
 """
 
 import os
-import wandb
 from datetime import datetime
 from dotenv import load_dotenv
 from huggingface_hub import login
@@ -16,8 +15,8 @@ load_dotenv()
 
 BASE_MODEL = "cybersectony/phishing-email-detection-distilbert_v2.4.1"
 HF_USER = os.getenv("HF_USER", "")          # your HuggingFace username
-PROJECT_NAME = "phishing-detector"
-RUN_NAME = f"{datetime.now():%Y-%m-%d_%H.%M.%S}"
+PROJECT_NAME = "sentra-utoledo"
+RUN_NAME = "v1.0"
 PROJECT_RUN_NAME = f"{PROJECT_NAME}-{RUN_NAME}"
 HUB_MODEL_NAME = f"{HF_USER}/{PROJECT_RUN_NAME}" if HF_USER else PROJECT_RUN_NAME
 
@@ -50,7 +49,7 @@ TARGET_MODULES = ["q_lin", "k_lin", "v_lin", "out_lin"]
 
 EPOCHS = 3
 BATCH_SIZE = 16
-GRADIENT_ACCUMULATION_STEPS = 2
+GRADIENT_ACCUMULATION_STEPS = 1
 LEARNING_RATE = 2e-4
 LR_SCHEDULER_TYPE = "cosine"
 WARMUP_RATIO = 0.03
@@ -63,7 +62,6 @@ MAX_GRAD_NORM = 0.3
 LOGGING_STEPS = 50
 SAVE_STEPS = 500
 SAVE_TOTAL_LIMIT = 5
-LOG_TO_WANDB = True
 OUTPUT_DIR = PROJECT_RUN_NAME   # local checkpoint directory
 
 # ─── Auth helpers ─────────────────────────────────────────────────────────────
@@ -76,19 +74,3 @@ def login_huggingface() -> None:
         )
     login(token, add_to_git_credential=True)
     print(f"Logged in to HuggingFace as {HF_USER or '(HF_USER not set)'}")
-
-
-def login_wandb() -> None:
-    """Log in to Weights & Biases using WANDB_API_KEY from environment."""
-    api_key = os.environ.get("WANDB_API_KEY")
-    if not api_key:
-        raise EnvironmentError(
-            "WANDB_API_KEY not set. Add it to your .env file or export it in your shell."
-        )
-    os.environ["WANDB_API_KEY"] = api_key
-    os.environ["WANDB_PROJECT"] = PROJECT_NAME
-    os.environ["WANDB_LOG_MODEL"] = "checkpoint"
-    os.environ["WANDB_WATCH"] = "gradients"
-
-    wandb.login()
-    print(f"Logged in to Weights & Biases (project: {PROJECT_NAME})")

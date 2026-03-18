@@ -8,13 +8,15 @@ Exports:
 """
 
 import torch
-from transformers import AutoModelForSequenceClassification, BitsAndBytesConfig
+from torch import nn
+from transformers import AutoConfig, AutoModelForSequenceClassification, BitsAndBytesConfig
 from peft import LoraConfig, TaskType, get_peft_model, prepare_model_for_kbit_training
 
 import config
 
 ID2LABEL = {0: "legitimate", 1: "phishing"}
 LABEL2ID = {"legitimate": 0, "phishing": 1}
+NUM_LABELS = len(ID2LABEL)
 
 
 # ─── Quantization ─────────────────────────────────────────────────────────────
@@ -65,11 +67,17 @@ def load_model(
     print("=" * 60)
     print(f"Base model: {config.BASE_MODEL}")
 
-    kwargs = dict(
-        num_labels=2,
+    model_config = AutoConfig.from_pretrained(
+        config.BASE_MODEL,
+        trust_remote_code=True,
+        num_labels=NUM_LABELS,
         id2label=ID2LABEL,
         label2id=LABEL2ID,
-        trust_remote_code=True,
+        problem_type="single_label_classification",
+    )
+
+    kwargs = dict(
+        config=model_config,
         ignore_mismatched_sizes=True,  # allows loading pre-trained weights into new classification head
     )
 
@@ -85,11 +93,43 @@ def load_model(
         **kwargs,
     )
 
+    _ensure_binary_classification_head(model)
+
     footprint_gb = model.get_memory_footprint() / 1e9
     print(f"Memory footprint: {footprint_gb:.2f} GB")
     print(f"Labels: {ID2LABEL}")
 
     return model
+
+
+def _ensure_binary_classification_head(model: AutoModelForSequenceClassification) -> None:
+    """
+    Ensure the loaded classifier head matches the binary label space.
+
+    Some checkpoints carry a stale config/classifier shape from a previous
+    fine-tune. Rebuilding the head avoids batch-size mismatches inside the loss.
+    """
+    classifier = getattr(model, "classifier", None)
+    out_features = getattr(classifier, "out_features", None)
+    weight = getattr(classifier, "weight", None)
+    current_rows = weight.shape[0] if weight is not None else out_features
+    in_features = getattr(classifier, "in_features", None)
+
+    if current_rows != NUM_LABELS:
+        if in_features is None:
+            raise ValueError("Unsupported classifier head: cannot determine input dimension.")
+
+        replacement = nn.Linear(in_features, NUM_LABELS)
+        if weight is not None:
+            replacement = replacement.to(device=weight.device, dtype=weight.dtype)
+        model.classifier = replacement
+        print(f"Reset classifier head from {current_rows} outputs to {NUM_LABELS}.")
+
+    model.num_labels = NUM_LABELS
+    model.config.num_labels = NUM_LABELS
+    model.config.id2label = ID2LABEL
+    model.config.label2id = LABEL2ID
+    model.config.problem_type = "single_label_classification"
 
 
 # ─── LoRA ─────────────────────────────────────────────────────────────────────
